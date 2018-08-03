@@ -6,7 +6,7 @@
 类型 | 功能
 -------- | ---
 **缓存**|**边播边缓存，使用了[AndroidVideoCache](https://github.com/danikula/AndroidVideoCache)；ExoPlayer使用SimpleCache。**
-**协议**|**h263\4\5、Https、concat、rtsp、hls、rtmp、crypto、mpeg等等。**
+**协议**|**h263\4\5、Https、concat、rtsp、hls、rtmp、crypto、mpeg等等。[（ijk模式格式支持）](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS.md)**
 **滤镜**|**简单滤镜（马赛克、黑白、色彩过滤、高斯、模糊、模糊等等20多种）、动画、（水印、画面多重播放等）。**
 **帧图**|**视频第一帧、视频帧截图功能，视频生成gif功能。**
 **播放**|**列表播放、列表连续播放、重力旋转与手动旋转、视频本身rotation旋转属性、快播和慢播、网络视频加载速度。**
@@ -45,21 +45,21 @@
 #### A、直接引入
 ```
 //完整版引入
-compile 'com.shuyu:GSYVideoPlayer:5.0.1'
+compile 'com.shuyu:GSYVideoPlayer:5.0.2'
 
 ```
 
 #### B、添加java和你想要的so支持：
 
 ```
-compile 'com.shuyu:gsyVideoPlayer-java:5.0.1'
+compile 'com.shuyu:gsyVideoPlayer-java:5.0.2'
 
 //根据你的需求
-compile 'com.shuyu:gsyVideoPlayer-armv5:5.0.1'
-compile 'com.shuyu:gsyVideoPlayer-armv7a:5.0.1'
-compile 'com.shuyu:gsyVideoPlayer-arm64:5.0.1'
-compile 'com.shuyu:gsyVideoPlayer-x64:5.0.1'
-compile 'com.shuyu:gsyVideoPlayer-x86:5.0.1'
+compile 'com.shuyu:gsyVideoPlayer-armv5:5.0.2'
+compile 'com.shuyu:gsyVideoPlayer-armv7a:5.0.2'
+compile 'com.shuyu:gsyVideoPlayer-arm64:5.0.2'
+compile 'com.shuyu:gsyVideoPlayer-x64:5.0.2'
+compile 'com.shuyu:gsyVideoPlayer-x86:5.0.2'
 
 ```
 
@@ -69,9 +69,9 @@ A、B普通版本支持263/264/265等，对于mpeg编码会有声音无画面情
 C 引入的so支持mpeg编码和其他补充协议，但是so包相对变大。
  
 ```
-compile 'com.shuyu:gsyVideoPlayer-java:5.0.1'
+compile 'com.shuyu:gsyVideoPlayer-java:5.0.2'
 
-compile 'com.shuyu:gsyVideoPlayer-ex_so:5.0.1'
+compile 'com.shuyu:gsyVideoPlayer-ex_so:5.0.2'
 
 ```
 
@@ -80,7 +80,7 @@ compile 'com.shuyu:gsyVideoPlayer-ex_so:5.0.1'
 ## 二、其他推荐
 
 ### * QQ群，有兴趣的欢迎（平时吹水吐槽多，因为人数饱和，目前开启付费入群）：174815284 。
-### * [React Native Github客户端](https://github.com/CarGuo/GSYGithubAPP) 、 [Weex Github客户端](https://github.com/CarGuo/GSYGithubAPPWeex)
+### * [Flutter Github客户端](https://github.com/CarGuo/GSYGithubAPPFlutter) 、[React Native Github客户端](https://github.com/CarGuo/GSYGithubAPP) 、 [Weex Github客户端](https://github.com/CarGuo/GSYGithubAPPWeex)
 ### * [RickText](https://github.com/CarGuo/RickText)
 ### * [LazyRecyclerAdapter](https://github.com/CarGuo/LazyRecyclerAdapter)
 
@@ -92,7 +92,7 @@ compile 'com.shuyu:gsyVideoPlayer-ex_so:5.0.1'
 **项目解析说明**|***[--- 项目解析说明、包含项目架构和解析](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/GSYVIDEO_PLAYER_PROJECT_INFO.md)***
 接口文档入口|**[--- 使用说明、接口文档 - 入口](https://github.com/CarGuo/GSYVideoPlayer/wiki)**
 **问题集锦入口**|***[--- 问题集锦 - 入口（大部分你遇到的问题都在这里解决） ](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/QUESTION.md)***
-IJK编码格式|**[--- 项目支持视频格式（如果遇上黑屏，没声音）](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS.md)**
+编码格式|**[--- IJK模式支持视频格式大全](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS.md)**
 编译自定义SO|**[--- IJKPlayer编译自定义SO - 入口](http://www.jianshu.com/p/bd289e25d272)**
 版本更新说明|**[--- 版本更新说明 - 入口](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/UPDATE_VERSION.md)**
 
@@ -126,6 +126,14 @@ IJK编码格式|**[--- 项目支持视频格式（如果遇上黑屏，没声音
 <img src="https://github.com/CarGuo/GSYVideoPlayer/blob/master/img/07.gif" height="240px"/>
 
 ## 五、近期版本
+
+
+### 5.0.2（2018-08-01）
+* Fix跟随屏幕旋转存在的问题。
+* 修改对于Audio冲突时候的处理，子类可以复写方法自行另外处理.
+* fix #1300
+* 默认暂停图片修改为false
+
 
 ### 5.0.1(2018-07-01)
 * Update ListGSYVideoPlayer 
