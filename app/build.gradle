@@ -65,7 +65,6 @@ dependencies {
     def androidDependencies = rootProject.ext.androidDependencies
     def dataDependencies = rootProject.ext.dataDependencies
     annotationProcessor viewDependencies.apt_butterKnife
-    //debugCompile dataDependencies.leakcanary
     implementation viewDependencies.butterKnife
     implementation androidDependencies.recyclerView
     implementation viewDependencies.DanmakuFlameMaster
@@ -77,7 +76,7 @@ dependencies {
     implementation androidDependencies.support_v4
     implementation androidDependencies.design
 
-    implementation project(':gsyVideoPlayer')
+    //implementation project(':gsyVideoPlayer')
 
     implementation dataDependencies.okhttpUtil
     implementation dataDependencies.okhttp
@@ -88,8 +87,9 @@ dependencies {
     }
     annotationProcessor dataDependencies.permissionsdispatcherProcessor
 
+
     //jcenter
-    //implementation "com.shuyu:GSYVideoPlayer:$gsyVideoVersion"
+    implementation "com.shuyu:GSYVideoPlayer:$gsyVideoVersion"
 
     //implementation "com.shuyu:gsyVideoPlayer-java:$gsyVideoVersion'
 
@@ -100,5 +100,9 @@ dependencies {
     //implementation "com.shuyu:gsyVideoPlayer-x86:$gsyVideoVersion"
 
     //implementation "com.shuyu:gsyVideoPlayer-ex_so:$gsyVideoVersion"
+
+
+    debugImplementation dataDependencies.leakcanary
+    releaseImplementation dataDependencies.leakcanary_no_op
 
 }

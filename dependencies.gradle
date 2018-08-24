@@ -25,13 +25,13 @@ ext {
     floatWindow = '1.0.6'
 
     //DataLibraries
-    leakcanary = '1.5'
+    leakcanary = '1.6.1'
 
     imageLoader = '4.0.0'
 
-    gsyVideoVersion = '5.0.2'
+    gsyVideoVersion = '6.0.0-beta'
 
-    exo_player2 = '2.8.3'
+    exo_player2 = '2.8.4'
 
     permissionsdispatcher = '3.2.0'
 
@@ -73,6 +73,7 @@ ext {
     dataDependencies = [
             videocache                    : "com.shuyu:gsyvideoplayer-androidvideocache:${gsyVideoVersion}",
             leakcanary                    : "com.squareup.leakcanary:leakcanary-android:${leakcanary}",
+            leakcanary_no_op              : "com.squareup.leakcanary:leakcanary-android-no-op:${leakcanary}",
             okhttpUtil                    : "com.squareup.okhttp3:okhttp:${okhttp}",
             okhttp                        : "com.zhy:okhttputils:${okhttpUtil}",
             permissionsdispatcher         : "com.github.hotchemi:permissionsdispatcher:${permissionsdispatcher}",

@@ -31,17 +31,11 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     def viewDependencies = rootProject.ext.viewDependencies
-    implementation viewDependencies.ijkplayer_java
-
-    api viewDependencies.exo_player2
-    api viewDependencies.exo_player2_rtmp
-
+    api viewDependencies.ijkplayer_java
 
     //compile fileTree(dir: 'libs', include: ['*.jar'])
     //def viewDependencies = rootProject.ext.viewDependencies
     //compile viewDependencies.ijkplayer_java
-    //compile viewDependencies.exo_player2
-    //compile viewDependencies.exo_player2_rtmp
 
 }
 
