@@ -1,5 +1,23 @@
 ## 下方个版本说明，可以当做简单的wiki使用~，效果可参考DEMO。
 
+### 6.0.3(2019-01-15)
+
+* update exoPlayer to 2.9.3
+* update gradle 3.3.0 
+* update build sdk 28 
+* update support sdk 27.1.1
+* 修復exoplayer内核的一些问题。
+
+
+
+### 6.0.2(2018-12-21)
+
+* update exoPlayer to 2.9.1
+* Deprecated setupLazy
+* fix exoPlayer looper
+* add `overrideExtension` to exoPlayer
+
+
 ### 6.0.1 (2018-10-14)
 * 正式发布6.0版本，调整player和cache加载模式。
 

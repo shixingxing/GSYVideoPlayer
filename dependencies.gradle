@@ -9,10 +9,10 @@ allprojects {
 
 ext {
     //Android
-    androidBuildToolsVersion = "27.0.3"
+    androidBuildToolsVersion = "28.0.3"
     androidMinSdkVersion = 16
-    androidTargetSdkVersion = 27
-    androidCompileSdkVersion = 27
+    androidTargetSdkVersion = 28
+    androidCompileSdkVersion = 28
     supportLibraryVersion = '27.1.1'
 
     //ViewLibraries
@@ -29,9 +29,9 @@ ext {
 
     imageLoader = '4.0.0'
 
-    gsyVideoVersion = '6.0.1'
+    gsyVideoVersion = '6.0.3'
 
-    exo_player2 = '2.9.1'
+    exo_player2 = '2.9.3'
 
     permissionsdispatcher = '3.2.0'
 

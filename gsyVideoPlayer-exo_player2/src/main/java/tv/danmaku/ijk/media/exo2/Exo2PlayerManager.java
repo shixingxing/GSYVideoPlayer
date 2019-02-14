@@ -3,6 +3,8 @@ package tv.danmaku.ijk.media.exo2;
 import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.view.Surface;
 
@@ -53,6 +55,7 @@ public class Exo2PlayerManager implements IPlayerManager {
                 //通过自己的内部缓存机制
                 mediaPlayer.setCache(gsyModel.isCache());
                 mediaPlayer.setCacheDir(gsyModel.getCachePath());
+                mediaPlayer.setOverrideExtension(gsyModel.getOverrideExtension());
                 mediaPlayer.setDataSource(context, Uri.parse(gsyModel.getUrl()), gsyModel.getMapHeadData());
             }
             if (gsyModel.getSpeed() != 1 && gsyModel.getSpeed() > 0) {
@@ -64,7 +67,7 @@ public class Exo2PlayerManager implements IPlayerManager {
     }
 
     @Override
-    public void showDisplay(Message msg) {
+    public void showDisplay(final Message msg) {
         if (mediaPlayer == null) {
             return;
         }
@@ -78,7 +81,7 @@ public class Exo2PlayerManager implements IPlayerManager {
     }
 
     @Override
-    public void setSpeed(float speed, boolean soundTouch) {
+    public void setSpeed(final float speed, final boolean soundTouch) {
         if (mediaPlayer != null) {
             try {
                 mediaPlayer.setSpeed(speed, 1);
@@ -89,7 +92,7 @@ public class Exo2PlayerManager implements IPlayerManager {
     }
 
     @Override
-    public void setNeedMute(boolean needMute) {
+    public void setNeedMute(final boolean needMute) {
         if (mediaPlayer != null) {
             if (needMute) {
                 mediaPlayer.setVolume(0, 0);
