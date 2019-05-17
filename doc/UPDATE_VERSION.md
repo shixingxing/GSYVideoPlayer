@@ -1,5 +1,29 @@
 ## 下方个版本说明，可以当做简单的wiki使用~，效果可参考DEMO。
 
+### 7.0.1(2019-04-07)
+* 升级 ExoPlayer 到 2.9.6
+* ExoPlayer 增加 SSL 证书忽略支持
+``` 
+ExoSourceManager.setSkipSSLChain(true);
+```
+* 修复全屏动画过程中按下返回键问题 #1938
+* 修复全屏下的弹窗消失问题 #1927
+* 修复全屏切换过程过程中的音频焦点问题 #1912
+* 修复按键判空问题 #1919
+* 修复全屏切换surface的release问题
+
+
+### 7.0.0-beta1(2019-03-03)
+* orientation 增加 pause
+```
+ orientationUtils.setIsPause(true);
+```
+* update exoPlayer to 2.9.5。
+* exoPlayer 和 mediaPlayer 支持网速显示。
+* 修复一些问题。
+* 支持库切换到 androidx
+
+
 ### 6.0.3(2019-01-15)
 
 * update exoPlayer to 2.9.3
