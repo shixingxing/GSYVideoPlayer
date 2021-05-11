@@ -14,7 +14,18 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import static com.danikula.videocache.Preconditions.checkNotNull;
 import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
@@ -34,21 +45,25 @@ public class HttpUrlSource implements Source {
     private static final int MAX_REDIRECTS = 5;
     private final SourceInfoStorage sourceInfoStorage;
     private final HeaderInjector headerInjector;
+    private final HostnameVerifier v;
+    private final TrustManager[] trustAllCerts;
     private SourceInfo sourceInfo;
     private HttpURLConnection connection;
     private InputStream inputStream;
 
-    public HttpUrlSource(String url) {
-        this(url, SourceInfoStorageFactory.newEmptySourceInfoStorage());
+    public HttpUrlSource(String url, HostnameVerifier v, TrustManager[] trustAllCerts) {
+        this(url, SourceInfoStorageFactory.newEmptySourceInfoStorage(), v, trustAllCerts);
     }
 
-    public HttpUrlSource(String url, SourceInfoStorage sourceInfoStorage) {
-        this(url, sourceInfoStorage, new EmptyHeadersInjector());
+    public HttpUrlSource(String url, SourceInfoStorage sourceInfoStorage, HostnameVerifier v, TrustManager[] trustAllCerts) {
+        this(url, sourceInfoStorage, new EmptyHeadersInjector(), v, trustAllCerts);
     }
 
-    public HttpUrlSource(String url, SourceInfoStorage sourceInfoStorage, HeaderInjector headerInjector) {
+    public HttpUrlSource(String url, SourceInfoStorage sourceInfoStorage, HeaderInjector headerInjector, HostnameVerifier v, TrustManager[] trustAllCerts) {
         this.sourceInfoStorage = checkNotNull(sourceInfoStorage);
         this.headerInjector = checkNotNull(headerInjector);
+        this.v = v;
+        this.trustAllCerts = trustAllCerts;
         SourceInfo sourceInfo = sourceInfoStorage.get(url);
         this.sourceInfo = sourceInfo != null ? sourceInfo :
                 new SourceInfo(url, Integer.MIN_VALUE, ProxyCacheUtils.getSupposablyMime(url));
@@ -58,6 +73,8 @@ public class HttpUrlSource implements Source {
         this.sourceInfo = source.sourceInfo;
         this.sourceInfoStorage = source.sourceInfoStorage;
         this.headerInjector = source.headerInjector;
+        this.trustAllCerts = source.trustAllCerts;
+        this.v = source.v;
     }
 
     @Override
@@ -152,7 +169,26 @@ public class HttpUrlSource implements Source {
         int redirectCount = 0;
         String url = this.sourceInfo.url;
         do {
-            connection = (HttpURLConnection) new URL(url).openConnection();
+            if (url.startsWith("https") && v != null && trustAllCerts != null) {
+                connection = (HttpURLConnection) new URL(url).openConnection();
+                ((HttpsURLConnection) connection).setHostnameVerifier(v);
+                // Install the all-trusting trust manager
+                final SSLContext sslContext;
+                try {
+                    sslContext = SSLContext.getInstance("SSL");
+                    sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                    // Create an ssl socket factory with our all-trusting manager
+                    final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+                    ((HttpsURLConnection) connection).setSSLSocketFactory(sslSocketFactory);
+                    ((HttpsURLConnection) connection).setHostnameVerifier(v);
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (KeyManagementException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                connection = (HttpURLConnection) new URL(url).openConnection();
+            }
             injectCustomHeaders(connection, url);
             if (offset > 0) {
                 connection.setRequestProperty("Range", "bytes=" + offset + "-");

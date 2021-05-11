@@ -5,8 +5,10 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
+
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -14,10 +16,11 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SeekParameters;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
@@ -27,6 +30,7 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MediaSourceEventListener;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 
 import java.io.File;
@@ -56,9 +60,10 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
     protected Context mAppContext;
     protected SimpleExoPlayer mInternalPlayer;
     protected EventLogger mEventLogger;
-    protected DefaultRenderersFactory rendererFactory;
+    protected DefaultRenderersFactory mRendererFactory;
     protected MediaSource mMediaSource;
-    protected DefaultTrackSelector mTrackSelector;
+    protected MappingTrackSelector mTrackSelector;
+    protected LoadControl mLoadControl;
     protected String mDataSource;
     protected Surface mSurface;
     protected Map<String, String> mHeaders = new HashMap<>();
@@ -333,11 +338,13 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
     }
 
     protected void prepareAsyncInternal() {
-        new Handler(Looper.getMainLooper()).post(
+        new Handler(Looper.myLooper()).post(
                 new Runnable() {
                     @Override
                     public void run() {
-                        mTrackSelector = new DefaultTrackSelector();
+                        if (mTrackSelector == null) {
+                            mTrackSelector = new DefaultTrackSelector(mAppContext);
+                        }
                         mEventLogger = new EventLogger(mTrackSelector);
                         boolean preferExtensionDecoders = true;
                         boolean useExtensionRenderers = true;//是否开启扩展
@@ -345,10 +352,17 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
                                 ? (preferExtensionDecoders ? DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
                                 : DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
                                 : DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF;
-
-                        rendererFactory = new DefaultRenderersFactory(mAppContext, extensionRendererMode);
-                        DefaultLoadControl loadControl = new DefaultLoadControl();
-                        mInternalPlayer = ExoPlayerFactory.newSimpleInstance(mAppContext, rendererFactory, mTrackSelector, loadControl, null, Looper.getMainLooper());
+                        if (mRendererFactory == null) {
+                            mRendererFactory = new DefaultRenderersFactory(mAppContext);
+                            mRendererFactory.setExtensionRendererMode(extensionRendererMode);
+                        }
+                        if (mLoadControl == null) {
+                            mLoadControl = new DefaultLoadControl();
+                        }
+                        mInternalPlayer = new SimpleExoPlayer.Builder(mAppContext, mRendererFactory)
+                                .setLooper(Looper.myLooper())
+                                .setTrackSelector(mTrackSelector)
+                                .setLoadControl(mLoadControl).build();
                         mInternalPlayer.addListener(IjkExo2MediaPlayer.this);
                         mInternalPlayer.addAnalyticsListener(IjkExo2MediaPlayer.this);
                         mInternalPlayer.addListener(mEventLogger);
@@ -357,8 +371,8 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
                         }
                         if (mSurface != null)
                             mInternalPlayer.setVideoSurface(mSurface);
-
-                        mInternalPlayer.prepare(mMediaSource);
+                        mInternalPlayer.setMediaSource(mMediaSource);
+                        mInternalPlayer.prepare();
                         mInternalPlayer.setPlayWhenReady(false);
                     }
                 }
@@ -394,6 +408,15 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
     public boolean isCache() {
         return isCache;
     }
+
+
+    /**
+     * 设置seek 的临近帧。
+     **/
+    public void setSeekParameter(@Nullable SeekParameters seekParameters) {
+        mInternalPlayer.setSeekParameters(seekParameters);
+    }
+
 
     /**
      * 是否开启cache
@@ -462,6 +485,30 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
 
     }
 
+    public MappingTrackSelector getTrackSelector() {
+        return mTrackSelector;
+    }
+
+    public void setTrackSelector(MappingTrackSelector trackSelector) {
+        this.mTrackSelector = trackSelector;
+    }
+
+    public LoadControl getLoadControl() {
+        return mLoadControl;
+    }
+
+    public void setLoadControl(LoadControl loadControl) {
+        this.mLoadControl = loadControl;
+    }
+
+    public DefaultRenderersFactory getRendererFactory() {
+        return mRendererFactory;
+    }
+
+    public void setRendererFactory(DefaultRenderersFactory rendererFactory) {
+        this.mRendererFactory = rendererFactory;
+    }
+
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
 
@@ -478,11 +525,15 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
         //缓冲时顺序为：STATE_BUFFERING -》STATE_READY
         //Log.e(TAG, "onPlayerStateChanged: playWhenReady = " + playWhenReady + ", playbackState = " + playbackState);
         if (isLastReportedPlayWhenReady != playWhenReady || lastReportedPlaybackState != playbackState) {
+            int buffer = 0;
+            if(mInternalPlayer != null) {
+                buffer =  mInternalPlayer.getBufferedPercentage();
+            }
             if (isBuffering) {
                 switch (playbackState) {
                     case Player.STATE_ENDED:
                     case Player.STATE_READY:
-                        notifyOnInfo(IMediaPlayer.MEDIA_INFO_BUFFERING_END, mInternalPlayer.getBufferedPercentage());
+                        notifyOnInfo(IMediaPlayer.MEDIA_INFO_BUFFERING_END, buffer);
                         isBuffering = false;
                         break;
                 }
@@ -499,7 +550,7 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
 
             switch (playbackState) {
                 case Player.STATE_BUFFERING:
-                    notifyOnInfo(IMediaPlayer.MEDIA_INFO_BUFFERING_START, mInternalPlayer.getBufferedPercentage());
+                    notifyOnInfo(IMediaPlayer.MEDIA_INFO_BUFFERING_START, buffer);
                     isBuffering = true;
                     break;
                 case Player.STATE_READY:
@@ -604,51 +655,6 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
     }
 
     @Override
-    public void onLoadStarted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-
-    }
-
-    @Override
-    public void onLoadCompleted(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-
-    }
-
-    @Override
-    public void onLoadCanceled(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-
-    }
-
-    @Override
-    public void onLoadError(EventTime eventTime, MediaSourceEventListener.LoadEventInfo loadEventInfo, MediaSourceEventListener.MediaLoadData mediaLoadData, IOException error, boolean wasCanceled) {
-
-    }
-
-    @Override
-    public void onDownstreamFormatChanged(EventTime eventTime, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-
-    }
-
-    @Override
-    public void onUpstreamDiscarded(EventTime eventTime, MediaSourceEventListener.MediaLoadData mediaLoadData) {
-
-    }
-
-    @Override
-    public void onMediaPeriodCreated(EventTime eventTime) {
-
-    }
-
-    @Override
-    public void onMediaPeriodReleased(EventTime eventTime) {
-
-    }
-
-    @Override
-    public void onReadingStarted(EventTime eventTime) {
-
-    }
-
-    @Override
     public void onBandwidthEstimate(EventTime eventTime, int totalLoadTimeMs, long totalBytesLoaded, long bitrateEstimate) {
 
     }
@@ -679,11 +685,6 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
     }
 
     @Override
-    public void onAudioSessionId(EventTime eventTime, int audioSessionId) {
-        this.audioSessionId = audioSessionId;
-    }
-
-    @Override
     public void onAudioUnderrun(EventTime eventTime, int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
 
     }
@@ -695,9 +696,9 @@ public class IjkExo2MediaPlayer extends AbstractMediaPlayer implements Player.Ev
 
     @Override
     public void onVideoSizeChanged(EventTime eventTime, int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-        mVideoWidth = width;
+        mVideoWidth = (int) (width * pixelWidthHeightRatio);
         mVideoHeight = height;
-        notifyOnVideoSizeChanged(width, height, 1, 1);
+        notifyOnVideoSizeChanged((int) (width * pixelWidthHeightRatio), height, 1, 1);
         if (unappliedRotationDegrees > 0)
             notifyOnInfo(IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED, unappliedRotationDegrees);
     }

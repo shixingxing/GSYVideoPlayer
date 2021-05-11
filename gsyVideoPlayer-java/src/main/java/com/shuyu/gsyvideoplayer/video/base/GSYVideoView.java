@@ -9,9 +9,11 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
+
 import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import android.util.AttributeSet;
 import android.view.InflateException;
 import android.view.Surface;
@@ -29,6 +31,7 @@ import com.shuyu.gsyvideoplayer.utils.NetInfoModule;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
 import static com.shuyu.gsyvideoplayer.utils.CommonUtil.getTextSpeed;
 
 /**
@@ -270,9 +273,9 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
         mTextureViewContainer = (ViewGroup) findViewById(R.id.surface_container);
         if (isInEditMode())
             return;
-        mScreenWidth = getActivityContext().getResources().getDisplayMetrics().widthPixels;
-        mScreenHeight = getActivityContext().getResources().getDisplayMetrics().heightPixels;
-        mAudioManager = (AudioManager) getActivityContext().getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        mScreenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
+        mScreenHeight = mContext.getResources().getDisplayMetrics().heightPixels;
+        mAudioManager = (AudioManager) mContext.getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
 
     }
 
@@ -300,7 +303,8 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
      * 开始播放逻辑
      */
     protected void startButtonLogic() {
-        if (mVideoAllCallBack != null && mCurrentState == CURRENT_STATE_NORMAL) {
+        if (mVideoAllCallBack != null && (mCurrentState == CURRENT_STATE_NORMAL
+                || mCurrentState == CURRENT_STATE_AUTO_COMPLETE)) {
             Debuger.printfLog("onClickStartIcon");
             mVideoAllCallBack.onClickStartIcon(mOriginUrl, mTitle, this);
         } else if (mVideoAllCallBack != null) {
@@ -329,7 +333,13 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
         getGSYVideoManager().setPlayTag(mPlayTag);
         getGSYVideoManager().setPlayPosition(mPlayPosition);
         mAudioManager.requestAudioFocus(onAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-        ((Activity) getActivityContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        try {
+            if (mContext instanceof Activity) {
+                ((Activity) mContext).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         mBackUpPlayingBufferState = -1;
         getGSYVideoManager().prepare(mUrl, (mMapHeadData == null) ? new HashMap<String, String>() : mMapHeadData, mLooping, mSpeed, mCache, mCachePath, mOverrideExtension);
         setStateAndUi(CURRENT_STATE_PREPAREING);
@@ -522,7 +532,7 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
         mPauseBeforePrepared = false;
         if (mCurrentState == CURRENT_STATE_PAUSE) {
             try {
-                if (mCurrentPosition > 0 && getGSYVideoManager() != null) {
+                if (mCurrentPosition >= 0 && getGSYVideoManager() != null) {
                     if (seek) {
                         getGSYVideoManager().seekTo(mCurrentPosition);
                     }
@@ -603,14 +613,20 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
         if (!mIfCurrentIsFullscreen)
             getGSYVideoManager().setLastListener(null);
         mAudioManager.abandonAudioFocus(onAudioFocusChangeListener);
-        ((Activity) getActivityContext()).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
+        if (mContext instanceof Activity) {
+            try {
+                ((Activity) mContext).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         releaseNetWorkState();
 
         if (mVideoAllCallBack != null && isCurrentMediaListener()) {
             Debuger.printfLog("onAutoComplete");
             mVideoAllCallBack.onAutoComplete(mOriginUrl, mTitle, this);
         }
+        mHadPlay = false;
     }
 
     @Override
@@ -633,10 +649,22 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
         getGSYVideoManager().setCurrentVideoWidth(0);
 
         mAudioManager.abandonAudioFocus(onAudioFocusChangeListener);
-        ((Activity) getActivityContext()).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if (mContext instanceof Activity) {
+            try {
+                ((Activity) mContext).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         releaseNetWorkState();
 
+        if (mVideoAllCallBack != null) {
+            Debuger.printfLog("onComplete");
+            mVideoAllCallBack.onComplete(mOriginUrl, mTitle, this);
+        }
+
+        mHadPlay = false;
     }
 
     @Override
@@ -821,7 +849,7 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
      */
     protected void createNetWorkState() {
         if (mNetInfoModule == null) {
-            mNetInfoModule = new NetInfoModule(getActivityContext().getApplicationContext(), new NetInfoModule.NetChangeListener() {
+            mNetInfoModule = new NetInfoModule(mContext.getApplicationContext(), new NetInfoModule.NetChangeListener() {
                 @Override
                 public void changed(String state) {
                     if (!mNetSate.equals(state)) {
@@ -1060,6 +1088,8 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
      * 是否需要加载显示暂停的cover图片
      * 打开状态下，暂停退到后台，再回到前台不会显示黑屏，但可以对某些机型有概率出现OOM
      * 关闭情况下，暂停退到后台，再回到前台显示黑屏
+     * 目前某些特定情况可能会出现切换视频时黑屏：
+     * https://github.com/CarGuo/GSYVideoPlayer/issues/1757#issuecomment-751981100
      *
      * @param showPauseCover 默认true
      */
@@ -1127,6 +1157,7 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
 
     /**
      * 是否需要覆盖拓展类型，目前只针对exoPlayer内核模式有效
+     *
      * @param overrideExtension 比如传入 m3u8,mp4,avi 等类型
      */
     public void setOverrideExtension(String overrideExtension) {

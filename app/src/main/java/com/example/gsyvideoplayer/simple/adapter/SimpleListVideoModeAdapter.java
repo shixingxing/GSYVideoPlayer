@@ -69,7 +69,7 @@ public class SimpleListVideoModeAdapter extends BaseAdapter {
         }
 
         final String urlH = "http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4";
-        final String urlV = "http://wdquan-space.b0.upaiyun.com/VIDEO/2018/11/22/ae0645396048_hls_time10.m3u8";
+        final String urlV = "http://7xjmzj.com1.z0.glb.clouddn.com/20171026175005_JObCxCE2.mp4";
         final String url = (position % 2 == 0) ? urlH : urlV;
 
         if (position % 2 == 0) {
@@ -92,9 +92,10 @@ public class SimpleListVideoModeAdapter extends BaseAdapter {
         });
         //防止错位设置
         holder.gsyVideoPlayer.setPlayTag(TAG);
+        holder.gsyVideoPlayer.setLockLand(true);
         holder.gsyVideoPlayer.setPlayPosition(position);
-        //是否根据视频尺寸，自动选择竖屏全屏或者横屏全屏
-        holder.gsyVideoPlayer.setAutoFullWithSize(true);
+        //是否根据视频尺寸，自动选择竖屏全屏或者横屏全屏，这个标志为和 setLockLand 冲突，需要和 orientationUtils 使用
+        holder.gsyVideoPlayer.setAutoFullWithSize(false);
         //音频焦点冲突时是否释放
         holder.gsyVideoPlayer.setReleaseWhenLossAudio(false);
         //全屏动画

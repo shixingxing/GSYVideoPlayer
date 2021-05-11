@@ -74,6 +74,7 @@ dependencies {
     annotationProcessor viewDependencies.apt_butterKnife
     implementation viewDependencies.butterKnife
     implementation androidDependencies.recyclerView
+    implementation androidDependencies.core
     implementation viewDependencies.DanmakuFlameMaster
     implementation viewDependencies.ndkbitmap_armv7a
     implementation viewDependencies.ndkbitmap_armv5
@@ -82,8 +83,23 @@ dependencies {
     implementation viewDependencies.glideProcessor
     implementation androidDependencies.support_v4
     implementation androidDependencies.design
+    implementation androidDependencies.viewpager2
 
     implementation project(':gsyVideoPlayer')
+    //implementation "com.github.CarGuo.GSYVideoPlayer:GSYVideoPlayer:8.1.3-beta"
+    //implementation 'com.github.CarGuo.GSYVideoPlayer:gsyVideoPlayer:v8.1.3-jitpack'
+
+    //implementation 'androidx.vectordrawable:vectordrawable-animated:1.1.0'
+
+//    implementation 'com.github.CarGuo.GSYVideoPlayer:gsyVideoPlayer-java:v8.1.3-jitpack'
+//    implementation 'com.github.CarGuo.GSYVideoPlayer:gsyVideoPlayer-armv64:v8.1.3-jitpack'
+//    implementation 'com.github.CarGuo.GSYVideoPlayer:gsyVideoPlayer-armv7a:v8.1.3-jitpack'
+//    implementation 'com.github.CarGuo.GSYVideoPlayer:gsyVideoPlayer-armv5:v8.1.3-jitpack'
+//    implementation 'com.github.CarGuo.GSYVideoPlayer:gsyVideoPlayer-x86:v8.1.3-jitpack'
+//    implementation 'com.github.CarGuo.GSYVideoPlayer:gsyVideoPlayer-x86_64:v8.1.3-jitpack'
+//    implementation 'com.github.CarGuo.GSYVideoPlayer:gsyVideoPlayer-ex_so:v8.1.3-jitpack'
+//    implementation 'com.github.CarGuo.GSYVideoPlayer:gsyVideoPlayer-exo_player2:v8.1.3-jitpack'
+
 
     implementation dataDependencies.okhttpUtil
     implementation dataDependencies.okhttp

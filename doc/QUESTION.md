@@ -107,7 +107,7 @@ GSYVideoManager.instance().setOptionModelList(list);
 ```
 <activity
     android:name=".PlayActivity"
-    android:configChanges="orientation|keyboardHidden|screenSize"
+    android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
     android:screenOrientation="portrait" />
 ```
 
@@ -209,38 +209,55 @@ mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1L);
 ```
 对应
 ```
-VideoOptionModel videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtsp_transport", "tcp");
-        List<VideoOptionModel> list = new ArrayList<>();
-        list.add(videoOptionModel);
-        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtsp_flags", "prefer_tcp");
-        list.add(videoOptionModel);
-        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "allowed_media_types", "video"); //根据媒体类型来配置
-        list.add(videoOptionModel);
-        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "timeout", 20000);
-        list.add(videoOptionModel);
-        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "buffer_size", 1316);
-        list.add(videoOptionModel);
-        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "infbuf", 1);  // 无限读
-        list.add(videoOptionModel);
-        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzemaxduration", 100);
-        list.add(videoOptionModel);
-        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 10240);
-        list.add(videoOptionModel);
-        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "flush_packets", 1);
-        list.add(videoOptionModel);
-        //  关闭播放器缓冲，这个必须关闭，否则会出现播放一段时间后，一直卡主，控制台打印 FFP_MSG_BUFFERING_START
-        videoOptionModel = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0);
-        list.add(videoOptionModel);
+List<VideoOptionModel> list = new ArrayList<>();
+VideoOptionModel videoOptionMode01 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "fast", 1);//不额外优化
+list.add(videoOptionMode01);
+VideoOptionModel videoOptionMode02 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 200);//10240
+list.add(videoOptionMode02);
+VideoOptionModel videoOptionMode03 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "flush_packets", 1);
+list.add(videoOptionMode03);
+//pause output until enough packets have been read after stalling
+VideoOptionModel videoOptionMode04 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0);//是否开启缓冲
+list.add(videoOptionMode04);
+//drop frames when cpu is too slow：0-120
+VideoOptionModel videoOptionMode05 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);//丢帧,太卡可以尝试丢帧
+list.add(videoOptionMode05);
+//automatically start playing on prepared
+VideoOptionModel videoOptionMode06 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "start-on-prepared", 1);
+list.add(videoOptionMode06);
+VideoOptionModel videoOptionMode07 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 48);//默认值48
+list.add(videoOptionMode07);
+//max buffer size should be pre-read：默认为15*1024*1024
+VideoOptionModel videoOptionMode11 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max-buffer-size", 0);//最大缓存数
+list.add(videoOptionMode11);
+VideoOptionModel videoOptionMode12 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "min-frames", 2);//默认最小帧数2
+list.add(videoOptionMode12);
+VideoOptionModel videoOptionMode13 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max_cached_duration", 30);//最大缓存时长
+list.add(videoOptionMode13);
+//input buffer:don't limit the input buffer size (useful with realtime streams)
+VideoOptionModel videoOptionMode14 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "infbuf", 1);//是否限制输入缓存数
+list.add(videoOptionMode14);
+VideoOptionModel videoOptionMode15 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "nobuffer");
+list.add(videoOptionMode15);
+VideoOptionModel videoOptionMode16 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtsp_transport", "tcp");//tcp传输数据
+list.add(videoOptionMode16);
+VideoOptionModel videoOptionMode17 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzedmaxduration", 100);//分析码流时长:默认1024*1000
+list.add(videoOptionMode17);
+
+GSYVideoManager.instance().setOptionModelList(list);
 ```
 
-#### 18、url切换400（http与https域名共用）
+#### 18、url切换400/404（http与https域名共用等）
 
 ```
-VideoOptionModel videoOptionModel =
+        VideoOptionModel videoOptionModel =
                 new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_clear", 1);
         List<VideoOptionModel> list = new ArrayList<>();
         list.add(videoOptionModel);
+        VideoOptionModel videoOptionModel2 = new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_timeout", -1);
+        list.add(videoOptionModel2);
         GSYVideoManager.instance().setOptionModelList(list);
+
 ```
 
 #### 19、全屏与非全屏的同步问题
@@ -303,6 +320,46 @@ VideoOptionModel videoOptionModel =
 
 https://stackoverflow.com/questions/6445052/android-context-memory-leak-listview-due-to-audiomanager
 
+#### 22、重连次数
+```
+VideoOptionModel videoOptionModel =
+                new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER,"reconnect",5);
+        List<VideoOptionModel> list = new ArrayList<>();
+        list.add(videoOptionModel);
+        GSYVideoManager.instance().setOptionModelList(list);
+```
+
+#### 22、ijk 模式的 mkv 字幕
+
+出了选择 track 之外，还可以配置
+
+```
+VideoOptionModel videoOptionModel =
+ new VideoOptionModel(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "subtitle", 1);
+List<VideoOptionModel> list = new ArrayList<>();
+list.add(videoOptionModel);
+GSYVideoManager.instance().setOptionModelList(list);
+```
+
+#### 23、封面到播放过程的黑屏问题
+
+https://github.com/CarGuo/GSYVideoPlayer/issues/2347#issuecomment-565701916
+
+
+### 24、其他问题
+
+https://github.com/CarGuo/GSYVideoPlayer/issues/2997#issuecomment-711480841
+
+
+### 25、seek 后花屏、死循环 buffer 问题
+
+```
+invalid dts/pts combination 740157300
+```
+
+- dts没有值时，返回回去后，解码状态全部进行了reset，则送入的第一帧信息应该为关键帧，否则该帧需要参考其他帧，产生花屏。
+- dts时间戳有误，将出现dts转化为微秒后永远小于seek传入时间问题，则永远无法返回packet，导致seek僵死。
+- 判断packet是否为关键帧，忽略了该packet是否为视频，如果该packet为音频并且flag & AV_PKT_FLAG_KEY的结果为真，则将返回该packet并清空seek标准。后续读到的视频也有非关键帧的可能，从而导致花屏。
 
 
 #### 更多配置

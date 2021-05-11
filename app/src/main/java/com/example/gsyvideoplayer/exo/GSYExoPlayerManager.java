@@ -8,17 +8,19 @@ import android.view.Surface;
 import com.google.android.exoplayer2.video.DummySurface;
 import com.shuyu.gsyvideoplayer.cache.ICacheManager;
 import com.shuyu.gsyvideoplayer.model.VideoOptionModel;
-import com.shuyu.gsyvideoplayer.player.IPlayerManager;
+import com.shuyu.gsyvideoplayer.player.BasePlayerManager;
+import com.shuyu.gsyvideoplayer.utils.Debuger;
 
 import java.util.List;
 
+import tv.danmaku.ijk.media.exo2.IjkExo2MediaPlayer;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 
 /**
  * Created by guoshuyu on 2018/5/16.
  * 自定义player管理器，装载自定义exo player，实现无缝切换效果
  */
-public class GSYExoPlayerManager implements IPlayerManager {
+public class GSYExoPlayerManager extends BasePlayerManager {
 
     private GSYExo2MediaPlayer mediaPlayer;
 
@@ -40,7 +42,9 @@ public class GSYExoPlayerManager implements IPlayerManager {
         }
         try {
             mediaPlayer.setLooping(((GSYExoModel) msg.obj).isLooping());
-            mediaPlayer.setDataSource(((GSYExoModel) msg.obj).getUrls(), ((GSYExoModel) msg.obj).getMapHeadData(), ((GSYExoModel) msg.obj).isCache());
+            Debuger.printfError("###### " + ((GSYExoModel) msg.obj).getOverrideExtension());
+            mediaPlayer.setOverrideExtension(((GSYExoModel) msg.obj).getOverrideExtension());
+            mediaPlayer.setDataSource(((GSYExoModel) msg.obj).getUrls(), ((GSYExoModel) msg.obj).getMapHeadData(), ((GSYExoModel) msg.obj).index, ((GSYExoModel) msg.obj).isCache());
             //很遗憾，EXO2的setSpeed只能在播放前生效
             if (((GSYExoModel) msg.obj).getSpeed() != 1 && ((GSYExoModel) msg.obj).getSpeed() > 0) {
                 mediaPlayer.setSpeed(((GSYExoModel) msg.obj).getSpeed(), 1);
@@ -79,7 +83,7 @@ public class GSYExoPlayerManager implements IPlayerManager {
 
     @Override
     public void setNeedMute(boolean needMute) {
-        if(mediaPlayer != null) {
+        if (mediaPlayer != null) {
             if (needMute) {
                 mediaPlayer.setVolume(0, 0);
             } else {
@@ -88,6 +92,12 @@ public class GSYExoPlayerManager implements IPlayerManager {
         }
     }
 
+    @Override
+    public void setVolume(float left, float right) {
+        if (mediaPlayer != null) {
+            mediaPlayer.setVolume(left, right);
+        }
+    }
 
     @Override
     public void releaseSurface() {
@@ -97,11 +107,27 @@ public class GSYExoPlayerManager implements IPlayerManager {
         }
     }
 
+    /**
+     * 测试异步释放
+     * */
     @Override
     public void release() {
-        if(mediaPlayer != null) {
-            mediaPlayer.setSurface(null);
-            mediaPlayer.release();
+        if (mediaPlayer != null) {
+            final IjkExo2MediaPlayer mm = mediaPlayer;
+            /// todo 测试异步，可能会收到警告
+            /// todo Player is accessed on the wrong thread. See https://exoplayer.dev/issues/player-accessed-on-wrong-thread
+            new Thread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            mm.setSurface(null);
+                            mm.release();
+
+                        }
+
+                    }
+            ).start();
+            mediaPlayer = null;
         }
         if (dummySurface != null) {
             dummySurface.release();

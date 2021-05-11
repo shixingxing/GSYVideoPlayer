@@ -47,23 +47,21 @@ public class LandLayoutVideo extends StandardGSYVideoPlayer {
                 gestureDetector = new GestureDetector(getContext().getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public boolean onDoubleTap(MotionEvent e) {
-                        touchDoubleUp();
+                        touchDoubleUp(e);
                         return super.onDoubleTap(e);
                     }
 
                     @Override
                     public boolean onSingleTapConfirmed(MotionEvent e) {
                         if (!mChangePosition && !mChangeVolume && !mBrightness) {
-                            onClickUiToggle();
+                            onClickUiToggle(e);
                         }
-                        Debuger.printfError("555a","9999999999999999999999");
                         return super.onSingleTapConfirmed(e);
                     }
 
                     @Override
                     public void onLongPress(MotionEvent e) {
                         super.onLongPress(e);
-                        Debuger.printfError("555a","0000000000000000000000");
                     }
                 });
             }
@@ -127,5 +125,23 @@ public class LandLayoutVideo extends StandardGSYVideoPlayer {
 
     public void setLinkScroll(boolean linkScroll) {
         isLinkScroll = linkScroll;
+    }
+
+
+    /**
+     * 定义结束后的显示
+     */
+    @Override
+    protected void changeUiToCompleteClear() {
+        super.changeUiToCompleteClear();
+        setTextAndProgress(0, true);
+        //changeUiToNormal();
+    }
+
+    @Override
+    protected void changeUiToCompleteShow() {
+        super.changeUiToCompleteShow();
+        setTextAndProgress(0, true);
+        //changeUiToNormal();
     }
 }

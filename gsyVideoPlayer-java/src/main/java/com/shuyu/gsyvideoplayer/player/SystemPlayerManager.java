@@ -24,7 +24,7 @@ import tv.danmaku.ijk.media.player.IMediaPlayer;
  * Created by guoshuyu on 2018/1/11.
  */
 
-public class SystemPlayerManager implements IPlayerManager {
+public class SystemPlayerManager extends BasePlayerManager {
 
     private Context context;
 
@@ -37,6 +37,8 @@ public class SystemPlayerManager implements IPlayerManager {
     private long lastTotalRxBytes = 0;
 
     private long lastTimeStamp = 0;
+
+    private boolean isPlaying = false;
 
     @Override
     public IMediaPlayer getMediaPlayer() {
@@ -63,6 +65,7 @@ public class SystemPlayerManager implements IPlayerManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        initSuccess(gsyModel);
     }
 
     @Override
@@ -74,6 +77,9 @@ public class SystemPlayerManager implements IPlayerManager {
             surface = holder;
             if (mediaPlayer != null && holder.isValid() && !release) {
                 mediaPlayer.setSurface(holder);
+            }
+            if (!isPlaying) {
+                pause();
             }
         }
     }
@@ -99,6 +105,13 @@ public class SystemPlayerManager implements IPlayerManager {
     }
 
     @Override
+    public void setVolume(float left, float right) {
+        if (mediaPlayer != null) {
+            mediaPlayer.setVolume(left, right);
+        }
+    }
+
+    @Override
     public void releaseSurface() {
         if (surface != null) {
             //surface.release();
@@ -111,6 +124,7 @@ public class SystemPlayerManager implements IPlayerManager {
         if (mediaPlayer != null) {
             release = true;
             mediaPlayer.release();
+            mediaPlayer = null;
         }
         lastTotalRxBytes = 0;
         lastTimeStamp = 0;
@@ -139,6 +153,7 @@ public class SystemPlayerManager implements IPlayerManager {
     public void start() {
         if (mediaPlayer != null) {
             mediaPlayer.start();
+            isPlaying = true;
         }
     }
 
@@ -146,6 +161,7 @@ public class SystemPlayerManager implements IPlayerManager {
     public void stop() {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
+            isPlaying = false;
         }
     }
 
@@ -153,6 +169,7 @@ public class SystemPlayerManager implements IPlayerManager {
     public void pause() {
         if (mediaPlayer != null) {
             mediaPlayer.pause();
+            isPlaying = false;
         }
     }
 
@@ -237,7 +254,7 @@ public class SystemPlayerManager implements IPlayerManager {
                 } else {
                     Debuger.printfError(" not support setSpeed");
                 }
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

@@ -4,18 +4,17 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.net.TrafficStats;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.view.Surface;
 
+import androidx.annotation.Nullable;
+
+import com.google.android.exoplayer2.SeekParameters;
 import com.google.android.exoplayer2.video.DummySurface;
 import com.shuyu.gsyvideoplayer.cache.ICacheManager;
 import com.shuyu.gsyvideoplayer.model.GSYModel;
 import com.shuyu.gsyvideoplayer.model.VideoOptionModel;
-import com.shuyu.gsyvideoplayer.player.IPlayerManager;
-
-import java.text.DecimalFormat;
+import com.shuyu.gsyvideoplayer.player.BasePlayerManager;
 import java.util.List;
 
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -25,7 +24,7 @@ import tv.danmaku.ijk.media.player.IMediaPlayer;
  * Created by guoshuyu on 2018/1/11.
  */
 
-public class Exo2PlayerManager implements IPlayerManager {
+public class Exo2PlayerManager extends BasePlayerManager {
 
     private Context context;
 
@@ -73,6 +72,7 @@ public class Exo2PlayerManager implements IPlayerManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        initSuccess(gsyModel);
     }
 
     @Override
@@ -111,6 +111,12 @@ public class Exo2PlayerManager implements IPlayerManager {
         }
     }
 
+    @Override
+    public void setVolume(float left, float right) {
+        if (mediaPlayer != null) {
+            mediaPlayer.setVolume(left, right);
+        }
+    }
 
     @Override
     public void releaseSurface() {
@@ -125,6 +131,7 @@ public class Exo2PlayerManager implements IPlayerManager {
         if (mediaPlayer != null) {
             mediaPlayer.setSurface(null);
             mediaPlayer.release();
+            mediaPlayer = null;
         }
         if (dummySurface != null) {
             dummySurface.release();
@@ -244,6 +251,16 @@ public class Exo2PlayerManager implements IPlayerManager {
     @Override
     public boolean isSurfaceSupportLockCanvas() {
         return false;
+    }
+
+
+    /**
+     * 设置seek 的临近帧。
+     **/
+    public void setSeekParameter(@Nullable SeekParameters seekParameters) {
+        if (mediaPlayer != null) {
+            mediaPlayer.setSeekParameter(seekParameters);
+        }
     }
 
 

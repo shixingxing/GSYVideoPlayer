@@ -4,8 +4,10 @@ import android.Manifest;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -13,12 +15,16 @@ import android.widget.Toast;
 import com.example.gsyvideoplayer.simple.SimpleActivity;
 import com.example.gsyvideoplayer.utils.JumpUtils;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
+import com.shuyu.gsyvideoplayer.player.IjkPlayerManager;
+import com.shuyu.gsyvideoplayer.player.PlayerFactory;
+import com.shuyu.gsyvideoplayer.player.SystemPlayerManager;
 import com.shuyu.gsyvideoplayer.utils.Debuger;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import permissions.dispatcher.PermissionUtils;
+import tv.danmaku.ijk.media.exo2.Exo2PlayerManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,7 +34,13 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.open_btn_empty)
     Button openBtn2;
 
+
+    @BindView(R.id.change_core)
+    Button changeCore;
+
     final String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+    int i = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +66,8 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick({R.id.open_btn, R.id.list_btn, R.id.list_btn_2, R.id.list_detail, R.id.clear_cache, R.id.recycler, R.id.recycler_2, R.id.list_detail_list, R.id.web_detail, R.id.danmaku_video, R.id.fragment_video,
             R.id.more_type, R.id.input_type, R.id.open_btn_empty, R.id.open_control, R.id.open_filter, R.id.open_btn_pick, R.id.open_btn_auto, R.id.open_scroll, R.id.open_window, R.id.open_btn_ad,
-            R.id.open_btn_multi, R.id.open_btn_ad2, R.id.open_list_ad, R.id.open_custom_exo, R.id.open_simple, R.id.open_switch})
+            R.id.open_btn_multi, R.id.open_btn_ad2, R.id.open_list_ad, R.id.open_custom_exo, R.id.open_simple, R.id.open_switch, R.id.media_codec, R.id.detail_normal_activity,
+            R.id.detail_download_activity, R.id.detail_audio_activity, R.id.detail_subtitle_activity, R.id.change_core, R.id.view_pager2_activity})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.open_simple:
@@ -155,6 +168,37 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.open_switch:
                 JumpUtils.goToSwitch(this);
+                break;
+            case R.id.media_codec:
+                JumpUtils.goMediaCodec(this);
+                break;
+            case R.id.detail_normal_activity:
+                JumpUtils.goToDetailNormalActivity(this);
+                break;
+            case R.id.detail_download_activity:
+                JumpUtils.goToDetailDownloadActivity(this);
+                break;
+            case R.id.detail_subtitle_activity:
+                JumpUtils.goToGSYExoSubTitleDetailPlayer(this);
+                break;
+            case R.id.detail_audio_activity:
+                JumpUtils.goToDetailAudioActivity(this);
+                break;
+            case R.id.view_pager2_activity:
+                JumpUtils.goToViewPager2Activity(this);
+                break;
+            case R.id.change_core:
+                i += 1;
+                if (i % 3 == 0) {
+                    PlayerFactory.setPlayManager(IjkPlayerManager.class);
+                    changeCore.setText("IJK 内核");
+                } else if (i % 3 == 1) {
+                    PlayerFactory.setPlayManager(Exo2PlayerManager.class);
+                    changeCore.setText("EXO 内核");
+                } else if (i % 3 == 2) {
+                    PlayerFactory.setPlayManager(SystemPlayerManager.class);
+                    changeCore.setText("系统 内核");
+                }
                 break;
             case R.id.clear_cache:
                 //清理缓存

@@ -5,6 +5,7 @@ import android.view.View;
 
 import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
 import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
+import com.shuyu.gsyvideoplayer.utils.OrientationOption;
 import com.shuyu.gsyvideoplayer.utils.OrientationUtils;
 import com.shuyu.gsyvideoplayer.video.GSYADVideoPlayer;
 import com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer;
@@ -23,7 +24,7 @@ public abstract class GSYBaseADActivityDetail<T extends GSYBaseVideoPlayer, R ex
     public void initVideo() {
         super.initVideo();
         //外部辅助的旋转，帮助全屏
-        mADOrientationUtils = new OrientationUtils(this, getGSYADVideoPlayer());
+        mADOrientationUtils = new OrientationUtils(this, getGSYADVideoPlayer(), getOrientationOption());
         //初始化不打开外部的旋转
         mADOrientationUtils.setEnable(false);
         if (getGSYADVideoPlayer().getFullscreenButton() != null) {
@@ -129,6 +130,9 @@ public abstract class GSYBaseADActivityDetail<T extends GSYBaseVideoPlayer, R ex
             mADOrientationUtils.releaseListener();
     }
 
+    /**
+     * orientationUtils 和  detailPlayer.onConfigurationChanged 方法是用于触发屏幕旋转的
+     */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         //如果旋转了就全屏
@@ -142,6 +146,7 @@ public abstract class GSYBaseADActivityDetail<T extends GSYBaseVideoPlayer, R ex
         super.onConfigurationChanged(newConfig);
         isPlay = backUpIsPlay;
     }
+
 
     @Override
     public void onStartPrepared(String url, Object... objects) {
@@ -166,6 +171,11 @@ public abstract class GSYBaseADActivityDetail<T extends GSYBaseVideoPlayer, R ex
 
     @Override
     public void clickForFullScreen() {
+
+    }
+
+    @Override
+    public void onComplete(String url, Object... objects) {
 
     }
 
@@ -197,6 +207,14 @@ public abstract class GSYBaseADActivityDetail<T extends GSYBaseVideoPlayer, R ex
         getGSYADVideoPlayer().startWindowFullscreen(GSYBaseADActivityDetail.this, hideActionBarWhenFull(), hideStatusBarWhenFull());
     }
 
+    /**
+     * 可配置旋转 OrientationUtils
+     */
+    public OrientationOption getOrientationOption() {
+        return null;
+    }
+
+
     public abstract R getGSYADVideoPlayer();
 
     /**
@@ -206,6 +224,7 @@ public abstract class GSYBaseADActivityDetail<T extends GSYBaseVideoPlayer, R ex
 
     /**
      * 是否播放开始广告
+     * 如果返回 false ，setStartAfterPrepared 需要设置为 ture
      */
     public abstract boolean isNeedAdOnStart();
 }

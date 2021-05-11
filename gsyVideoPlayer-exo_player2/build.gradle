@@ -33,9 +33,9 @@ dependencies {
     def viewDependencies = rootProject.ext.viewDependencies
     api viewDependencies.exo_player2
     api viewDependencies.exo_player2_rtmp
-    //api project(':gsyVideoPlayer-base')
-    api "com.shuyu:gsyVideoPlayer-base:$gsyVideoVersion"
+    api project(':gsyVideoPlayer-base')
+    //api "com.shuyu:gsyVideoPlayer-base:$gsyVideoVersion"
 
 }
 
-apply from: './bintray.gradle'
+//apply from: './bintray.gradle'
