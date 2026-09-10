@@ -5,6 +5,8 @@
 # Built application files
 *.apk
 *.aar
+# FFmpegKitNext：本地构建的 AAR 需入库（fork 开箱即用、CI 可解析），放行 ffmpeg-kit-prebuilt 目录
+!ffmpeg-kit-prebuilt/**/*.aar
 *.ap_
 *.aab
 
