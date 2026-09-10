@@ -23,10 +23,10 @@ git clone https://github.com/arthenica/ffmpeg-kit-next.git
 cd ffmpeg-kit-next
 export ANDROID_SDK_ROOT=$HOME/Android/Sdk
 export ANDROID_NDK_ROOT=$HOME/Android/Sdk/ndk/27.2.12479018
-# 架构说明：arm-v7a 与 arm-v7a-neon 共用 armeabi-v7a ABI；本仓库选择非 NEON 的
-# arm-v7a（兼容不支持 NEON 的老 32 位设备），故显式禁用 arm-v7a-neon 与 32 位 x86。
+# 架构说明：arm-v7a 与 arm-v7a-neon 共用 armeabi-v7a ABI；采用 NEON 版（推荐配置，
+# 与 ijk 播放内核 v7a so 及官方 main release 一致），显式禁用非 NEON 的 arm-v7a 与 32 位 x86。
 # 最终产物 ABI：arm64-v8a + armeabi-v7a + x86_64。
-./android.sh --disable-arm-v7a-neon --disable-x86 \
+./android.sh --disable-arm-v7a --disable-x86 \
              --enable-openssl --api-level=26 --jobs=8
 # 产物：prebuilt/<type>/com/arthenica/ffmpeg-kit-next/<version>/...
 ```
