@@ -40,13 +40,40 @@ jobs:
       - name: 安装 Android SDK 组件（含 NDK r27d）
         shell: bash
         run: |
-          yes | sdkmanager --licenses >/dev/null
-          sdkmanager "platform-tools" "platforms;android-26" "ndk;27.2.12479018"
+          set -euo pipefail
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+          # runner 预装 SDK 的 sdkmanager 不在默认 PATH，手动探测（不同镜像路径不同）
+          SDKM=""
+          for p in \
+            "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" \
+            "$ANDROID_SDK_ROOT/cmdline-tools/bin/sdkmanager" ; do
+            if [ -x "$p" ]; then SDKM="$p"; break; fi
+          done
+
+          if [ -n "$SDKM" ]; then
+            echo "使用 sdkmanager: $SDKM"
+            # yes 管道在 sdkmanager 提前退出时会报 Broken pipe，属正常，忽略
+            yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+            yes | "$SDKM" --sdk_root="$ANDROID_SDK_ROOT" \
+              "platform-tools" "platforms;android-26" "ndk;27.2.12479018" >/dev/null
+          else
+            echo "sdkmanager 不可用，直接下载 NDK r27d"
+            mkdir -p "$ANDROID_SDK_ROOT/ndk"
+            curl -sSL -o /tmp/android-ndk-r27d-linux.zip \
+              https://dl.google.com/android/repository/android-ndk-r27d-linux.zip
+            unzip -q /tmp/android-ndk-r27d-linux.zip -d "$ANDROID_SDK_ROOT/ndk"
+            mv "$ANDROID_SDK_ROOT/ndk/android-ndk-r27d" \
+               "$ANDROID_SDK_ROOT/ndk/27.2.12479018"
+          fi
+          ls -d "$ANDROID_SDK_ROOT/ndk/27.2.12479018"
 
       - name: 克隆并构建 FFmpegKitNext
         shell: bash
         run: |
           set -euo pipefail
+          # ffmpeg 交叉编译所需的 host 工具
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq yasm pkg-config autoconf automake libtool make >/dev/null
           # 全量 clone + 拉全部 tag：android.sh 依赖 `git describe --tags` 生成版本号，
           # 浅克隆会导致 describe 失败、构建直接退出
           git clone https://github.com/arthenica/ffmpeg-kit-next.git /tmp/ffmpeg-kit-next
