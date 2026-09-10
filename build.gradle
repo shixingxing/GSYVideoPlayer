@@ -40,6 +40,9 @@ allprojects {
                 password = project.findProperty('githubReadToken') ?: System.getenv('GITHUB_READ_TOKEN') ?: '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'
             }
         }
+        // FFmpegKitNext：本地预编译 AAR（由 ffmpeg-kit-next 构建机产出后放入 ffmpeg-kit-prebuilt/）
+        // 目录结构保持 com/arthenica/ffmpeg-kit-next/<version>/ffmpeg-kit-next-<version>.aar(+.pom)
+        maven { url = uri("$rootDir/ffmpeg-kit-prebuilt") }
     }
 }
 

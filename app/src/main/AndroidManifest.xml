@@ -266,6 +266,13 @@
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Transitions" />
+        <!-- FFmpegKitNext 示例：视频每 1 秒截取 1 帧（导出以便 adb 直接启动） -->
+        <activity
+            android:name=".ffmpeg.FfmpegFrameExtractActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Transitions" />
 
         <!-- Loopback DevReceiver 现在渲染在应用内悬浮小窗（CastReceiverFloatingWindow）
              + 独立的 CastReceiverManager IJK 实例，不再拉起独立 Activity。原先的

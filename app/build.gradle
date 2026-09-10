@@ -92,6 +92,9 @@ dependencies {
     implementation project(":gsyVideoPlayer-aliplay")
     implementation project(":gsyVideoPlayer-compose")
 
+    // FFmpegKitNext：Android 端执行 ffmpeg 命令（每秒截帧示例见 FfmpegFrameExtractActivity）
+    implementation viewDependencies.ffmpegKitNext
+
     // Compose（仅 Demo 使用）
     def composeBom = platform(composeDependencies.bom)
     implementation composeBom

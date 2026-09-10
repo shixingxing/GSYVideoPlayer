@@ -4,6 +4,9 @@ ext {
     glideVersion = "4.12.0"
     mediaVersion = "1.10.1"
     permissionsDispatcherVersion = "4.9.1"
+    // FFmpegKitNext：本地构建的 AAR 版本号（由 ffmpeg-kit-next 构建时 git describe --tags 决定）。
+    // 默认对齐官方最新 release；放入 ffmpeg-kit-prebuilt 目录时按实际产物版本修改。
+    ffmpegKitNextVersion = "9.0.1"
     // Kotlin & Compose（仅 gsyVideoPlayer-compose 模块使用）
     kotlinVersion = "2.0.21"
     // 注意：Compose Compiler 版本由 `org.jetbrains.kotlin.plugin.compose` 跟随 kotlinVersion 自动管理，
@@ -47,6 +50,9 @@ ext {
         ijkplayer            : "io.github.carguo:gsyijkjava:1.0.0",
         danmakuFlameMaster   : "com.github.CarGuo.DanmakuFlameMaster:DanmakuFlameMaster:${danmakuFlameMasterSoVersion}",
         floatWindow          : "com.github.yhaolpz:FloatWindow:1.0.6",
+
+        // FFmpegKitNext：Android 端执行 ffmpeg/ffprobe 命令（本地 Maven 仓库引入，见根 build.gradle）
+        ffmpegKitNext        : "com.arthenica:ffmpeg-kit-next:${ffmpegKitNextVersion}",
 
         // 13.2.1: DLNA/UPnP implementation dependencies are isolated in the optional
         // gsyVideoPlayer-cast module. Core player artifacts must not expose jUPnP/Jetty.

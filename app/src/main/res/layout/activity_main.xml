@@ -337,5 +337,12 @@
             android:layout_marginTop="20dp"
             android:text="投屏 Demo (M2c)" />
 
+        <Button
+            android:id="@+id/ffmpeg_frame_extract"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="FFmpegKit 每秒截帧" />
+
     </LinearLayout>
 </ScrollView>

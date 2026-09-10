@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.example.gsyvideoplayer.databinding.ActivityListVideoBinding;
 import com.example.gsyvideoplayer.databinding.ActivityMainBinding;
 import com.example.gsyvideoplayer.compose.ComposeDemoListActivity;
+import com.example.gsyvideoplayer.ffmpeg.FfmpegFrameExtractActivity;
 import com.example.gsyvideoplayer.simple.SimpleActivity;
 import com.example.gsyvideoplayer.utils.JumpUtils;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
@@ -99,6 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.composeDemo.setOnClickListener(this);
 
         binding.castDemo.setOnClickListener(this);
+
+        binding.ffmpegFrameExtract.setOnClickListener(this);
 
         boolean hadPermission = PermissionUtils.hasSelfPermissions(this, permissions);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !hadPermission) {
@@ -298,6 +301,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.cast_demo:
                 //M2c 投屏 Demo 入口（发现列表 mock + 手动输入 IP 回退）
                 startActivity(new Intent(this, CastDemoActivity.class));
+                break;
+            case R.id.ffmpeg_frame_extract:
+                //FFmpegKitNext 示例：视频每 1 秒截取 1 帧
+                startActivity(new Intent(this, FfmpegFrameExtractActivity.class));
                 break;
         }
     }
