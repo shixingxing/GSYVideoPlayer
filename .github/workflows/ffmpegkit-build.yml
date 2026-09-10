@@ -81,9 +81,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # ffmpeg 交叉编译所需的 host 工具
+          # ffmpeg 交叉编译所需的 host 工具；x86-64 平台汇编需要 nasm
+          # （ffmpeg 自 2017 起优先 NASM，老 yasm 1.3.0 会致 x86-64 编译失败）
           sudo apt-get update -qq
-          sudo apt-get install -y -qq yasm pkg-config autoconf automake libtool make >/dev/null
+          sudo apt-get install -y -qq yasm nasm pkg-config autoconf automake libtool make >/dev/null
           # 全量 clone + 拉全部 tag：android.sh 依赖 `git describe --tags` 生成版本号，
           # 浅克隆会导致 describe 失败、构建直接退出
           git clone https://github.com/arthenica/ffmpeg-kit-next.git /tmp/ffmpeg-kit-next
@@ -93,10 +94,17 @@ jobs:
             || git checkout -f "v${{ github.event.inputs.version }}" 2>/dev/null || true
           export ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT"
           export ANDROID_NDK_ROOT="${ANDROID_SDK_ROOT}/ndk/27.2.12479018"
-          ARGS=(--api-level=26 --jobs=4 --force --disable-arm-v7a --disable-arm-v7a-neon --disable-x86)
-          ${{ github.event.inputs.openssl == 'true' && 'ARGS+=(--enable-openssl)' || 'ARGS+=(--disable-openssl)' }}
-          ${{ github.event.inputs.gpl == 'true' && 'ARGS+=(--enable-gpl --enable-x264 --enable-x265)' || '' }}
-          ./android.sh "${ARGS[@]}"
+          ARGS=(--api-level=26 --jobs=4 --force --disable-arch-arm-v7a --disable-arch-arm-v7a-neon --disable-arch-x86)
+          ${{ github.event.inputs.openssl == 'true' && 'ARGS+=(--enable-lib-openssl)' || 'ARGS+=(--disable-lib-openssl)' }}
+          ${{ github.event.inputs.gpl == 'true' && 'ARGS+=(--enable-gpl --enable-lib-x264 --enable-lib-x265)' || '' }}
+          ./android.sh "${ARGS[@]}" || {
+            echo "=== 构建失败，打印 build.log ==="
+            find /tmp/ffmpeg-kit-next -maxdepth 4 -iname "build.log" 2>/dev/null | while read -r f; do
+              echo "--- $f (tail 250) ---"
+              tail -n 250 "$f"
+            done
+            exit 1
+          }
 
       - name: 上传 AAR 产物
         uses: actions/upload-artifact@v4
