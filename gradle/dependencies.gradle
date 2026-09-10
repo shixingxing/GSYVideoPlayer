@@ -5,8 +5,8 @@ ext {
     mediaVersion = "1.10.1"
     permissionsDispatcherVersion = "4.9.1"
     // FFmpegKitNext：本地构建的 AAR 版本号（由 ffmpeg-kit-next 构建时 git describe --tags 决定）。
-    // 默认对齐官方最新 release；放入 ffmpeg-kit-prebuilt 目录时按实际产物版本修改。
-    ffmpegKitNextVersion = "9.0.1"
+    // 上游最新 release 为 9.0.0（对应 FFmpeg v9.0.1）；放入 ffmpeg-kit-prebuilt 目录时按实际产物版本修改。
+    ffmpegKitNextVersion = "9.0.0"
     // Kotlin & Compose（仅 gsyVideoPlayer-compose 模块使用）
     kotlinVersion = "2.0.21"
     // 注意：Compose Compiler 版本由 `org.jetbrains.kotlin.plugin.compose` 跟随 kotlinVersion 自动管理，

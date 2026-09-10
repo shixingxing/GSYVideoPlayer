@@ -6,7 +6,6 @@ import android.util.Log;
 import com.arthenica.ffmpegkit.FFmpegKit;
 import com.arthenica.ffmpegkit.FFmpegSession;
 import com.arthenica.ffmpegkit.FFmpegSessionCompleteCallback;
-import com.arthenica.ffmpegkit.Log;
 import com.arthenica.ffmpegkit.LogCallback;
 import com.arthenica.ffmpegkit.ReturnCode;
 import com.arthenica.ffmpegkit.Statistics;
@@ -87,7 +86,7 @@ public final class FfmpegKitRunner {
                 },
                 new LogCallback() {
                     @Override
-                    public void apply(Log log) {
+                    public void apply(com.arthenica.ffmpegkit.Log log) {
                         if (callback != null && log != null && log.getMessage() != null) {
                             callback.onLog(log.getMessage());
                         }

@@ -14,9 +14,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "FFmpegKitNext tag（需与 gradle 的 ffmpegKitNextVersion 一致）"
+        description: "FFmpegKitNext tag（上游最新为 9.0.0，需与 gradle 的 ffmpegKitNextVersion 一致）"
         required: true
-        default: "9.0.1"
+        default: "9.0.0"
       gpl:
         description: "启用 GPL（x264/x265，整包变 GPL v3.0）"
         type: boolean
