@@ -50,20 +50,30 @@ jobs:
             if [ -x "$p" ]; then SDKM="$p"; break; fi
           done
 
-          if [ -n "$SDKM" ]; then
-            echo "使用 sdkmanager: $SDKM"
-            # yes 管道在 sdkmanager 提前退出时会报 Broken pipe，属正常，忽略
-            yes | "$SDKM" --licenses >/dev/null 2>&1 || true
-            yes | "$SDKM" --sdk_root="$ANDROID_SDK_ROOT" \
-              "platform-tools" "platforms;android-26" "ndk;27.2.12479018" >/dev/null
-          else
-            echo "sdkmanager 不可用，直接下载 NDK r27d"
+          install_ndk_zip() {
+            echo "fallback: 直接下载 NDK r27d"
             mkdir -p "$ANDROID_SDK_ROOT/ndk"
             curl -sSL -o /tmp/android-ndk-r27d-linux.zip \
               https://dl.google.com/android/repository/android-ndk-r27d-linux.zip
             unzip -q /tmp/android-ndk-r27d-linux.zip -d "$ANDROID_SDK_ROOT/ndk"
             mv "$ANDROID_SDK_ROOT/ndk/android-ndk-r27d" \
                "$ANDROID_SDK_ROOT/ndk/27.2.12479018"
+          }
+
+          if [ -n "$SDKM" ]; then
+            echo "使用 sdkmanager: $SDKM"
+            # yes 管道在 sdkmanager 提前退出时必然 Broken pipe（SIGPIPE），
+            # 在 pipefail 下会导致整条命令失败，全部用 || true 吸收，
+            # 安装是否成功由下方目录存在性兜底判断
+            yes | "$SDKM" --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null 2>&1 || true
+            yes | "$SDKM" --sdk_root="$ANDROID_SDK_ROOT" \
+              "platform-tools" "platforms;android-26" "ndk;27.2.12479018" >/dev/null 2>&1 || true
+          else
+            echo "sdkmanager 不可用，改走 zip 下载"
+          fi
+
+          if [ ! -d "$ANDROID_SDK_ROOT/ndk/27.2.12479018" ]; then
+            install_ndk_zip
           fi
           ls -d "$ANDROID_SDK_ROOT/ndk/27.2.12479018"
 
