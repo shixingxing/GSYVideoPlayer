@@ -344,5 +344,19 @@
             android:layout_marginTop="20dp"
             android:text="FFmpegKit 每秒截帧" />
 
+        <Button
+            android:id="@+id/fold_xml"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="折叠屏 Demo (XML)" />
+
+        <Button
+            android:id="@+id/fold_compose"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="折叠屏 Demo (Compose)" />
+
     </LinearLayout>
 </ScrollView>

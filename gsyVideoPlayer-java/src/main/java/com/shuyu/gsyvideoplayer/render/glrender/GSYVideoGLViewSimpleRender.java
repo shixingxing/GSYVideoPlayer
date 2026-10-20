@@ -69,6 +69,12 @@ public class GSYVideoGLViewSimpleRender extends GSYVideoGLViewBaseRender {
 
     private int maTextureHandle;
 
+    private int muViewSizeHandle = -1;
+
+    private int muTimeHandle = -1;
+
+    private final long mStartNanos = System.nanoTime();
+
     private volatile boolean mUpdateSurface = false;
 
     private volatile boolean mTakeShotPic = false;
@@ -80,6 +86,8 @@ public class GSYVideoGLViewSimpleRender extends GSYVideoGLViewBaseRender {
     private Surface mPlayerSurface;
 
     private GSYVideoGLView.ShaderInterface mEffect = new NoEffect();
+
+    private GSYVideoGLView.TextureShaderInterface mReadyTextureEffect;
 
     public GSYVideoGLViewSimpleRender() {
         mTriangleVertices = ByteBuffer
@@ -122,18 +130,19 @@ public class GSYVideoGLViewSimpleRender extends GSYVideoGLViewBaseRender {
 
         takeBitmap(glUnused);
 
-        GLES20.glFinish();
-
     }
 
     @Override
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
+        mCurrentViewWidth = width;
+        mCurrentViewHeight = height;
         GLES20.glViewport(0, 0, width, height);
     }
 
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
         mReleased = false;
+        mReadyTextureEffect = null;
 
         mProgram = createProgram(getVertexShader(), getFragmentShader());
         if (mProgram == 0) {
@@ -183,6 +192,7 @@ public class GSYVideoGLViewSimpleRender extends GSYVideoGLViewBaseRender {
             mTextureID[0] = 0;
             mTextureID[1] = 0;
         }
+        releaseReadyTextureEffect();
         if (mProgram != 0) {
             deleteProgram();
         }
@@ -249,13 +259,47 @@ public class GSYVideoGLViewSimpleRender extends GSYVideoGLViewBaseRender {
 
         GLES20.glUseProgram(mProgram);
         checkGlError("glUseProgram");
+        ensureTextureEffectReady();
         return true;
+    }
+
+    /**
+     * 保证当前效果自带的纹理资产已在 GL 线程上传；切换到其它效果时先释放旧纹理。
+     */
+    protected void ensureTextureEffectReady() {
+        GSYVideoGLView.TextureShaderInterface current =
+                mEffect instanceof GSYVideoGLView.TextureShaderInterface
+                        ? (GSYVideoGLView.TextureShaderInterface) mEffect : null;
+        if (mReadyTextureEffect == current) {
+            return;
+        }
+        if (mReadyTextureEffect != null) {
+            mReadyTextureEffect.onSurfaceRelease(mSurfaceView);
+            mReadyTextureEffect = null;
+        }
+        if (current != null) {
+            current.onSurfaceReady(mSurfaceView);
+            mReadyTextureEffect = current;
+        }
+    }
+
+    /**
+     * 释放当前已上传的纹理资产（GL 线程内调用）。
+     */
+    protected void releaseReadyTextureEffect() {
+        if (mReadyTextureEffect != null) {
+            mReadyTextureEffect.onSurfaceRelease(mSurfaceView);
+            mReadyTextureEffect = null;
+        }
     }
 
 
     protected void bindDrawFrameTexture() {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureID[0]);
+        if (mReadyTextureEffect != null) {
+            mReadyTextureEffect.onBindTextures(mSurfaceView, mProgram);
+        }
     }
 
 
@@ -313,6 +357,13 @@ public class GSYVideoGLViewSimpleRender extends GSYVideoGLViewBaseRender {
         GLES20.glUniformMatrix4fv(muMVPMatrixHandle, 1, false, mMVPMatrix,
                 0);
         GLES20.glUniformMatrix4fv(muSTMatrixHandle, 1, false, mSTMatrix, 0);
+        if (muViewSizeHandle != -1) {
+            GLES20.glUniform2f(muViewSizeHandle, mCurrentViewWidth, mCurrentViewHeight);
+        }
+        if (muTimeHandle != -1) {
+            float timeSeconds = (System.nanoTime() - mStartNanos) / 1_000_000_000.0f;
+            GLES20.glUniform1f(muTimeHandle, timeSeconds);
+        }
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         checkGlError("glDrawArrays");
@@ -347,10 +398,16 @@ public class GSYVideoGLViewSimpleRender extends GSYVideoGLViewBaseRender {
             return false;
         }
 
+        int viewSizeHandle = GLES20.glGetUniformLocation(program, "uViewSize");
+
+        int timeHandle = GLES20.glGetUniformLocation(program, "uTime");
+
         maPositionHandle = positionHandle;
         maTextureHandle = textureHandle;
         muMVPMatrixHandle = mvpMatrixHandle;
         muSTMatrixHandle = stMatrixHandle;
+        muViewSizeHandle = viewSizeHandle;
+        muTimeHandle = timeHandle;
         return true;
     }
 

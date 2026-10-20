@@ -1,4 +1,6 @@
-# 建议添加到项目 README 的依赖说明
+# v14.0.0 依赖接入摘要
+
+本版默认 ABI 为 `arm64-v8a` / `armeabi-v7a` / `x86_64`；旧 `armeabi` / `x86` 未升级到 FFmpeg 5。完整坐标与组合规则见 [DEPENDENCIES.md](DEPENDENCIES.md)。
 
 ## 📦 依赖配置 (两种方式)
 
@@ -7,24 +9,23 @@
 ```gradle
 dependencies {
     // 核心库
-    implementation 'io.github.carguo:gsyvideoplayer-java:13.2.1'
+    implementation 'io.github.carguo:gsyvideoplayer-java:14.0.0'
 
-    // 基础库
-    implementation 'io.github.carguo:gsyvideoplayer-base:13.2.1'
+    // java 已通过 api 引入 base，无需重复声明
 
-    // 其他变体
-    implementation 'io.github.carguo:gsyvideoplayer-armv7a:13.2.1'
-    implementation 'io.github.carguo:gsyvideoplayer-arm64:13.2.1'
-    implementation 'io.github.carguo:gsyvideoplayer-x86:13.2.1'
+    // 按需选择 ABI；也可用 ex_so 代替下面三行
+    implementation 'io.github.carguo:gsyvideoplayer-armv7a:14.0.0'
+    implementation 'io.github.carguo:gsyvideoplayer-arm64:14.0.0'
+    implementation 'io.github.carguo:gsyvideoplayer-x64:14.0.0'
 
     // Compose 可选支持
-    implementation 'io.github.carguo:gsyvideoplayer-compose:13.2.1'
+    implementation 'io.github.carguo:gsyvideoplayer-compose:14.0.0'
 
     // RTMP 可选直接依赖；gsyvideoplayer-exo2 已通过 api 传递
-    implementation 'io.github.carguo:gsyvideoplayer-rtmp:13.2.1'
+    implementation 'io.github.carguo:gsyvideoplayer-rtmp:14.0.0'
 
     // DLNA/UPnP 投屏可选依赖；默认播放器不包含 Jetty（该模块 minSdk 26）
-    implementation 'io.github.carguo:gsyvideoplayer-cast:13.2.1'
+    implementation 'io.github.carguo:gsyvideoplayer-cast:14.0.0'
     // ...
 }
 ```
@@ -50,9 +51,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.shuyu:gsyvideoplayer-java:13.2.1'
+    implementation 'com.shuyu:gsyvideoplayer-java:14.0.0'
+    implementation 'com.shuyu:gsyvideoplayer-ex_so:14.0.0'
     // 仅需要 DLNA/UPnP 投屏时添加
-    implementation 'com.shuyu:gsyvideoplayer-cast:13.2.1'
+    implementation 'com.shuyu:gsyvideoplayer-cast:14.0.0'
 }
 ```
 

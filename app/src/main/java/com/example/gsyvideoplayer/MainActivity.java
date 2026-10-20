@@ -102,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding.castDemo.setOnClickListener(this);
 
         binding.ffmpegFrameExtract.setOnClickListener(this);
+        binding.foldXml.setOnClickListener(this);
+        binding.foldCompose.setOnClickListener(this);
 
         boolean hadPermission = PermissionUtils.hasSelfPermissions(this, permissions);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !hadPermission) {
@@ -305,6 +307,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.ffmpeg_frame_extract:
                 //FFmpegKitNext 示例：视频每 1 秒截取 1 帧
                 startActivity(new Intent(this, FfmpegFrameExtractActivity.class));
+                break;
+            case R.id.fold_xml:
+                startActivity(new Intent(this, FoldDetailActivity.class));
+                break;
+            case R.id.fold_compose:
+                startActivity(new Intent(this, com.example.gsyvideoplayer.compose.host.FoldComposeActivity.class));
                 break;
         }
     }

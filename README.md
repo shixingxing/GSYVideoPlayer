@@ -13,8 +13,8 @@
  Type          | Function
 -------------|-------------------------------------------------------------------------------------------------------------------------------------------------
  **Cache**      | **Play while caching, using [AndroidVideoCache](https://github.com/danikula/AndroidVideoCache); Media3(ExoPlayer) uses SimpleCache.**
- **Protocols**      | **h263\4\5, Https, concat, rtsp, hls, rtmp, crypto, mpeg, etc. [ (ijk mode format support) ](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS.md)**
- **Filters**      | **Simple filters (mosaic, black and white, color filter, Gaussian, blur, etc. more than 20 kinds), animation, (watermark, multi-screen playback, etc.).**
+ **Protocols**      | **h263\4\5, Https, concat, rtsp, hls, rtmp, crypto, mpeg, etc. [ (ijk mode format support) ](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS_EN.md)**
+ **Filters**      | **Basic filters, watermarks, multi-screen playback, multi-pass Gaussian/pyramid blur, Bloom, LUT grading, beauty, Glitch, CRT and analog-TV interference. [Details](doc/RECENT_FEATURES_EN.md).**
  **Frame images**      | **Video first frame, video frame screenshots, composed player screenshots including UI, and video to gif function.**
  **Playback**      | **List playback, continuous list playback, gravity rotation and manual rotation, video's own rotation attribute, fast and slow playback, network video loading speed.**
  **Screen**      | **Adjust display ratio: default, 16:9, 4:3, fill; rotate screen angle during playback (0,90,180,270); mirror rotation.**
@@ -26,13 +26,14 @@
  **Subtitles**      | **Unified external subtitle overlay supports SRT/WebVTT across IJK, Media3(EXOPlayer), and MediaPlayer; Media3 embedded cues can bridge to the same UI.**
  **Dash**    | **Media3(exo2) mode supports dash; the demo supports HLS master / DASH MPD adaptive quality track switching.**
  **Stream**  | **Supports metadata playback**
- **Adapt 16k**  | **ex_so adapts to 16K Page Size**
- **openssl** | **Currently ex_so's arm64/x86_64  uses openssl 1.1.1w**
- **FFmpeg**  | **Currently ex_so's arm64/x86_64 uses FFmpeg 4.3**
- **FFmpeg**  | **Currently ex_so's arm64/x86_64  supports G711a(pcm_alaw)**
+ **Adapt 16k**  | **ex_so and arm64/x64 adapt to 16K Page Size**
+ **openssl** | **Currently ex_so and arm64/armv7a/x64 all use OpenSSL 3.5.9**
+ **FFmpeg**  | **Currently ex_so and arm64/armv7a/x64 (arm64-v8a / armeabi-v7a / x86_64) all use FFmpeg n5.1.10**
+ **FFmpeg**  | **Currently ex_so and arm64/armv7a/x64 (arm64-v8a / armeabi-v7a / x86_64) all support G711a(pcm_alaw)**
  **Cast**      | **Optional `gsyvideoplayer-cast` DLNA/UPnP module built on jUPnP 3.0.3; the core keeps only the protocol-neutral `CastCapability` / `CastProvider` / `CastSession` SPI and does not pull Jetty. [Details](doc/CAST_FEATURE_PLAN.md).**
  **More**      | **No black screen when pausing front and back switching; multi-URL quality switching; Exo HLS/DASH adaptive quality; seamless switching support; keep-last-frame demo; WebVTT progress bar preview.**
  **Customization**     | **Customizable rendering layer, custom management layer, custom playback layer (control layer), custom cache layer.**
+ **Foldables** | **XML / Compose FLAT, BOOK and TABLETOP split/fullscreen demos using FoldingFeature hinge information.**
 
 [![Maven Central Version](https://img.shields.io/maven-central/v/io.github.carguo/gsyvideoplayer)](https://central.sonatype.com/artifact/io.github.carguo/gsyvideoplayer)
 [![](https://jitpack.io/v/CarGuo/GSYVideoPlayer.svg)](https://jitpack.io/#CarGuo/GSYVideoPlayer)
@@ -70,6 +71,20 @@ There are currently three hosting methods:
 
 #### [--- Recent Playback Features --- ](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/RECENT_FEATURES_EN.md).
 
+### ABI and dependency selection in v14.0.0
+
+The `gsyvideoplayer` aggregate already includes Java, Exo2 and `ex_so`. For modular IJK setup, choose `ex_so` or the required standalone ABI modules; do not include two native sets for the same ABI.
+
+| Native artifact | ABI | Native libraries in this release |
+| --- | --- | --- |
+| `gsyvideoplayer-ex_so` | `arm64-v8a` / `armeabi-v7a` / `x86_64` | FFmpeg n5.1.10 + OpenSSL 3.5.9 |
+| `gsyvideoplayer-arm64` | `arm64-v8a` | Identical to the matching `ex_so` tuple |
+| `gsyvideoplayer-armv7a` | `armeabi-v7a` | Identical to the matching `ex_so` tuple |
+| `gsyvideoplayer-x64` | `x86_64` | Identical to the matching `ex_so` tuple |
+| `gsyvideoplayer-armv5` / `gsyvideoplayer-x86` | Legacy `armeabi` / `x86` | Historical libraries, not upgraded to FFmpeg 5; explicit legacy use only |
+
+Migrated standalone modules and `ex_so` share codec/protocol configuration. Choose by ABI and package size, rather than the former standard/extended MPEG distinction. Add `compose`, `cast` and `aliplay` only as needed; `cast` requires API 26, while the core requires API 23. See [DECODERS_EN.md](doc/DECODERS_EN.md) and [BUILD_SO_EN.md](doc/BUILD_SO_EN.md).
+
 ### 1. MavenCentral Reference (Recommended)
 
 Since jitpack keeps losing packages, it has been migrated to MavenCentral. The usage is as follows:
@@ -93,57 +108,54 @@ allprojects {
 ```groovy
  //Complete version introduction
 
-implementation 'io.github.carguo:gsyvideoplayer:13.2.1'
+implementation 'io.github.carguo:gsyvideoplayer:14.0.0'
 
 
 //Whether AliPlayer mode is needed
-implementation 'io.github.carguo:gsyvideoplayer-aliplay:13.2.1'
+implementation 'io.github.carguo:gsyvideoplayer-aliplay:14.0.0'
 
 //Whether DLNA/UPnP casting is needed (optional, minSdk 26)
-implementation 'io.github.carguo:gsyvideoplayer-cast:13.2.1'
+implementation 'io.github.carguo:gsyvideoplayer-cast:14.0.0'
 ```
 
 #### B. Add java and the so support you want:
 
 ```groovy
- implementation 'io.github.carguo:gsyvideoplayer-java:13.2.1'
+ implementation 'io.github.carguo:gsyvideoplayer-java:14.0.0'
 
  //Whether ExoPlayer mode is needed
- implementation 'io.github.carguo:gsyvideoplayer-exo2:13.2.1'
+ implementation 'io.github.carguo:gsyvideoplayer-exo2:14.0.0'
 
  //Optional direct RTMP module; exo2 already exposes it transitively
- implementation 'io.github.carguo:gsyvideoplayer-rtmp:13.2.1'
+ implementation 'io.github.carguo:gsyvideoplayer-rtmp:14.0.0'
 
  //Optional DLNA/UPnP cast implementation (minSdk 26); the default player does not include Jetty
- implementation 'io.github.carguo:gsyvideoplayer-cast:13.2.1'
+ implementation 'io.github.carguo:gsyvideoplayer-cast:14.0.0'
 
  //Whether AliPlayer mode is needed
- implementation 'io.github.carguo:gsyvideoplayer-aliplay:13.2.1'
+ implementation 'io.github.carguo:gsyvideoplayer-aliplay:14.0.0'
 
- //so of ijk mode according to your needs
- implementation 'io.github.carguo:gsyvideoplayer-arm64:13.2.1'
- implementation 'io.github.carguo:gsyvideoplayer-armv7a:13.2.1'
- implementation 'io.github.carguo:gsyvideoplayer-armv5:13.2.1'
- implementation 'io.github.carguo:gsyvideoplayer-x86:13.2.1'
- implementation 'io.github.carguo:gsyvideoplayer-x64:13.2.1'
+ //Select required ABIs; do not also add ex_so
+ implementation 'io.github.carguo:gsyvideoplayer-arm64:14.0.0'
+ implementation 'io.github.carguo:gsyvideoplayer-armv7a:14.0.0'
+ implementation 'io.github.carguo:gsyvideoplayer-x64:14.0.0'
 ```
 
-#### C. Support other format protocols (mpeg, rtsp, concat, crypto protocols, support 16k Page Size)
+#### C. Modular setup with all three migrated ABIs
 
-A and B normal versions support 263/264/265, etc. For mpeg encoding, there will be sound but no picture.
-The so introduced by C supports mpeg encoding and other supplementary protocols, but the so package is relatively larger.
+`ex_so` bundles all three migrated ABIs with the same codec configuration as the standalone modules in B. Select B when only a subset of ABIs is needed.
 
 ```groovy
- implementation 'io.github.carguo:gsyvideoplayer-java:13.2.1'
+ implementation 'io.github.carguo:gsyvideoplayer-java:14.0.0'
 
  //Whether ExoPlayer mode is needed
- implementation 'io.github.carguo:gsyvideoplayer-exo2:13.2.1'
+ implementation 'io.github.carguo:gsyvideoplayer-exo2:14.0.0'
 
  //Whether AliPlayer mode is needed
- implementation 'io.github.carguo:gsyvideoplayer-aliplay:13.2.1'
+ implementation 'io.github.carguo:gsyvideoplayer-aliplay:14.0.0'
 
- //More ijk encoding support
- implementation 'io.github.carguo:gsyvideoplayer-ex_so:13.2.1'
+ //IJK native libraries for the three migrated ABIs
+ implementation 'io.github.carguo:gsyvideoplayer-ex_so:14.0.0'
 
 ```
 
@@ -151,7 +163,7 @@ The so introduced by C supports mpeg encoding and other supplementary protocols,
 
 The `gsyvideoplayer-compose` module is published with v13.1.0. It can be consumed from Maven Central / GitHub Packages like the other modules, or by depending on the source module directly with `implementation project(":gsyVideoPlayer-compose")` when working inside this repository.
 >
-> 🛠 **Toolchain note:** the Compose module is verified on **JDK 21 in CI** (`.github/workflows/*.yml` — `actions/setup-java` `java-version: 21`) and **JDK 17 locally** (the module pins `sourceCompatibility / targetCompatibility / jvmTarget = 17` in [gsyVideoPlayer-compose/build.gradle](gsyVideoPlayer-compose/build.gradle)). Both are fine; just make sure your local JDK is **≥ 17** so Kotlin 2.0.21 + AGP 8.6.1 can build.
+> 🛠 **Toolchain note:** the Compose module is verified on **JDK 21 in CI** (`.github/workflows/*.yml` — `actions/setup-java` `java-version: 21`) and **JDK 17 locally** (the module pins `sourceCompatibility / targetCompatibility / jvmTarget = 17` in [gsyVideoPlayer-compose/build.gradle](gsyVideoPlayer-compose/build.gradle)). Both are fine; just make sure your local JDK is **≥ 17** so Kotlin 2.0.21 + AGP 8.9.1 can build.
 
 The new `gsyvideoplayer-compose` module exposes Compose entries on top of the existing kernels and UI without touching any legacy code:
 
@@ -160,14 +172,14 @@ The new `gsyvideoplayer-compose` module exposes Compose entries on top of the ex
 
 ```groovy
 // Maven Central:
-implementation 'io.github.carguo:gsyvideoplayer-compose:13.2.1'
+implementation 'io.github.carguo:gsyvideoplayer-compose:14.0.0'
 
 // Source dependency for local development:
 implementation project(':gsyVideoPlayer-compose')
 // compose-bom is api-exposed from the module; consumers still manage androidx.compose.* per their own project setup.
 ```
 
-See [doc/COMPOSE_USE.md](doc/COMPOSE_USE.md). The sample app provides a `Compose Demo` entry with **24 runnable Compose Activities** — covering Wrapper basics, Native detail/list/multi-window/auto-play/seamless-switch, plus P5 differentiating capabilities (filter, cache/download, ad pre-roll, subtitle, custom danmaku, EXO multi-source, parallel multi-window) and P5-2 modern app patterns (vertical short video, floating window, multi-type list, web mixed layout, audio-only, URL/local file, MediaCodec hardware switch, themed custom controls). `DemoSamples.kt` is a shared `data object` of test URLs, not a runnable Activity. Outstanding gaps and the rolling roadmap are tracked in [doc/COMPOSE_BACKLOG.md](doc/COMPOSE_BACKLOG.md).
+See [doc/COMPOSE_USE.md](doc/COMPOSE_USE.md). The sample app provides a `Compose Demo` entry with **25 runnable Compose Activities** — covering Wrapper basics, Native detail/list/multi-window/auto-play/seamless-switch, plus P5 differentiating capabilities (filter, cache/download, ad pre-roll, subtitle, custom danmaku, EXO multi-source, parallel multi-window) and P5-2 modern app patterns (vertical short video, floating window, multi-type list, web mixed layout, audio-only, URL/local file, MediaCodec hardware switch, themed custom controls), plus the v14 foldable BOOK/TABLETOP demo. `DemoSamples.kt` is a shared `data object` of test URLs, not a runnable Activity. Outstanding gaps and the rolling roadmap are tracked in [doc/COMPOSE_BACKLOG.md](doc/COMPOSE_BACKLOG.md).
 
 ### 2. Github Package Dependency Method (Recommended)
 
@@ -229,65 +241,62 @@ allprojects {
 
 ```groovy
  //Complete version introduction
- implementation 'com.shuyu:gsyvideoplayer:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer:14.0.0'
 
 
  //Whether AliPlayer mode is needed
- implementation 'com.shuyu:gsyvideoplayer-aliplay:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-aliplay:14.0.0'
 
  //Whether DLNA/UPnP casting is needed (optional, minSdk 26)
- implementation 'com.shuyu:gsyvideoplayer-cast:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-cast:14.0.0'
 ```
 
 #### B. Add java and the so support you want:
 
 ```groovy
- implementation 'com.shuyu:gsyvideoplayer-java:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-java:14.0.0'
 
  //Whether ExoPlayer mode is needed
- implementation 'com.shuyu:gsyvideoplayer-exo2:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-exo2:14.0.0'
 
  //Optional direct RTMP module; exo2 already exposes it transitively
- implementation 'com.shuyu:gsyvideoplayer-rtmp:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-rtmp:14.0.0'
 
  //Optional DLNA/UPnP cast implementation (minSdk 26); the default player does not include Jetty
- implementation 'com.shuyu:gsyvideoplayer-cast:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-cast:14.0.0'
 
  //Whether AliPlayer mode is needed
- implementation 'com.shuyu:gsyvideoplayer-aliplay:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-aliplay:14.0.0'
 
- //so of ijk mode according to your needs
- implementation 'com.shuyu:gsyvideoplayer-armv5:13.2.1'
- implementation 'com.shuyu:gsyvideoplayer-armv7a:13.2.1'
- implementation 'com.shuyu:gsyvideoplayer-arm64:13.2.1'
- implementation 'com.shuyu:gsyvideoplayer-x86:13.2.1'
- implementation 'com.shuyu:gsyvideoplayer-x64:13.2.1'
+ //Select required ABIs; do not also add ex_so
+ implementation 'com.shuyu:gsyvideoplayer-armv7a:14.0.0'
+ implementation 'com.shuyu:gsyvideoplayer-arm64:14.0.0'
+ implementation 'com.shuyu:gsyvideoplayer-x64:14.0.0'
 ```
 
-#### C. Support other format protocols (mpeg, rtsp, concat, crypto protocols, support 16k Page Size)
+#### C. Modular setup with all three migrated ABIs
 
-A and B normal versions support 263/264/265, etc. For mpeg encoding, there will be sound but no picture.
-The so introduced by C supports mpeg encoding and other supplementary protocols, but the so package is relatively larger.
+`ex_so` bundles all three migrated ABIs with the same codec configuration as the standalone modules in B. Select B when only a subset of ABIs is needed.
 
 ```groovy
- implementation 'com.shuyu:gsyvideoplayer-java:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-java:14.0.0'
 
  //Whether ExoPlayer mode is needed
- implementation 'com.shuyu:gsyvideoplayer-exo2:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-exo2:14.0.0'
 
 
  //Whether AliPlayer mode is needed
- implementation 'com.shuyu:gsyvideoplayer-aliplay:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-aliplay:14.0.0'
 
- //More ijk encoding support
- implementation 'com.shuyu:gsyvideoplayer-ex_so:13.2.1'
+ //IJK native libraries for the three migrated ABIs
+ implementation 'com.shuyu:gsyvideoplayer-ex_so:14.0.0'
 
 ```
 
 #### D. Jetpack Compose Support (Optional)
 
 ```groovy
- implementation 'com.shuyu:gsyvideoplayer-compose:13.2.1'
+ implementation 'com.shuyu:gsyvideoplayer-compose:14.0.0'
 ```
 
 ### 3. Jitpack Introduction Method (will continue to be released, but not highly recommended)
@@ -314,54 +323,51 @@ allprojects {
 ```groovy
  //Complete version introduction
 
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer:v14.0.0'
 
 
  //Whether AliPlayer mode is needed
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-aliplay:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-aliplay:v14.0.0'
 
  //Whether DLNA/UPnP casting is needed (optional, minSdk 26)
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-cast:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-cast:v14.0.0'
 ```
 
 #### B. Add java and the so support you want:
 
 ```groovy
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-java:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-java:v14.0.0'
 
  //Whether ExoPlayer mode is needed
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-exo2:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-exo2:v14.0.0'
 
  //Optional DLNA/UPnP cast implementation (minSdk 26)
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-cast:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-cast:v14.0.0'
 
  //Whether AliPlayer mode is needed
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-aliplay:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-aliplay:v14.0.0'
 
- //so of ijk mode according to your needs
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-arm64:v13.2.1'
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-armv7a:v13.2.1'
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-armv5:v13.2.1'
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-x86:v13.2.1'
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-x64:v13.2.1'
+ //Select required ABIs; do not also add ex_so
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-arm64:v14.0.0'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-armv7a:v14.0.0'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-x64:v14.0.0'
 ```
 
-#### C. Support other format protocols (mpeg, rtsp, concat, crypto protocols, support 16k Page Size)
+#### C. Modular setup with all three migrated ABIs
 
-A and B normal versions support 263/264/265, etc. For mpeg encoding, there will be sound but no picture.
-The so introduced by C supports mpeg encoding and other supplementary protocols, but the so package is relatively larger.
+`ex_so` bundles all three migrated ABIs with the same codec configuration as the standalone modules in B. Select B when only a subset of ABIs is needed.
 
 ```groovy
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-java:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-java:v14.0.0'
 
  //Whether ExoPlayer mode is needed
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-exo2:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-exo2:v14.0.0'
 
  //Whether AliPlayer mode is needed
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-aliplay:v13.2.1'
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-aliplay:v14.0.0'
 
- //More ijk encoding support
- implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-ex_so:v13.2.1'
+ //IJK native libraries for the three migrated ABIs
+ implementation 'com.github.CarGuo.GSYVideoPlayer:gsyvideoplayer-ex_so:v14.0.0'
 
 ```
 
@@ -457,7 +463,7 @@ ExoSourceManager.setExoMediaSourceInterceptListener(new ExoMediaSourceInterceptL
  **Project Analysis Description**    | ***[--- Project analysis description, including project architecture and analysis](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/GSYVIDEO_PLAYER_PROJECT_INFO.md)***
  API Documentation Entrance        | **[--- Usage instructions, API documentation - Entrance](https://github.com/CarGuo/GSYVideoPlayer/wiki)**
  **FAQ Entrance**    | ***[--- FAQ - Entrance (most of the problems you encounter are solved here) ](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/QUESTION.md)***
- Encoding Format          | **[--- IJK so file configuration format description](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS.md)**
+ Encoding Format          | **[--- IJK so file configuration format description](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS_EN.md)**
  Compile Custom SO       | **[--- IJKPlayer Compile Custom SO - Entrance](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/BUILD_SO.md)**
  Version Update Instructions        | **[--- Version Update Instructions - Entrance](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/UPDATE_VERSION.md)**
  compileSdk too high | --- **[#3514](https://github.com/CarGuo/GSYVideoPlayer/issues/3514)**
@@ -512,6 +518,19 @@ WEBVTT
 Library APIs include `GSYVideoPreviewVttParser`, `GSYVideoPreviewProvider`, and `GSYVideoPreviewFrame`. The app layer loads the frame image and crops the sprite area if needed. See `PreViewGSYVideoPlayer#setPreviewVttUrl(String previewVttUrl)`.
 
 ## V. Recent Versions
+
+### v14.0.0 (2026-10-10)
+
+- **IJK upgrade**: unify `ex_so` and arm64/armv7a/x64 on **FFmpeg n5.1.10 + OpenSSL 3.5.9**, with matched FFmpeg/player/SDL tuples and MJPEG / HEVC seek/replay repairs.
+- **TLS fixes**: fix ARMv7 HTTPS certificate-loading crashes and preserve explicit CA, peer verification and proxy settings across nested HLS requests. Final ARMv7 / ARM64 each pass CA loading and 15 playback checks on the originally affected device.
+- **Audio and RTSP**: support 0.25x–4x software tempo; repair audio drain, startup and EOF/error states; add initial RTSP redirects, opt-in live queue bounds and session callback/watchdog isolation. `timeout` is in microseconds.
+- **GL pipeline and effects**: add FBO multi-pass rendering, downsampling pyramids, Gaussian blur, Bloom, LUT grading, edge-preserving beauty, Glitch, CRT and analog-TV interference, plus `uTime` and texture-asset lifecycle support.
+- **Foldables**: add XML / Compose FLAT, BOOK and TABLETOP split demos with hinge, rotation, fullscreen and posture injection handling; increase runnable Compose demos to **25**.
+- **Compose**: fix #4259 host-detach resource release and #4261 buffering updates; add the dynamic aspect-ratio API and improve IJK/EXO cache switching and buffering demos.
+- **R8 and tooling**: narrow reflection/JNI keep rules; use Gradle **8.12**, AGP **8.9.1**, R8 **9.4.14**; add **13 integration skills** and session/Compose CI regressions.
+- **ABI migration**: the default aggregate/`ex_so` ships `arm64-v8a` / `armeabi-v7a` / `x86_64`. Legacy `armeabi` / `x86` require explicit standalone legacy modules and are not upgraded to FFmpeg 5.
+
+See the [full v14.0.0 changelog](doc/UPDATE_VERSION_EN.md#v1400-2026-10-10) for features, migration and verification scope, and the [release audit](doc/V14_RELEASE_REVIEW.md) for all **27 commits** and source/artifact mapping. Current x86_64 / 16 KiB-page runtime, hardware-decoded pixels and the complete acoustic gate remain unqualified.
 
 ### v13.2.1 (2026-08-19)
 
@@ -590,7 +609,7 @@ Library APIs include `GSYVideoPreviewVttParser`, `GSYVideoPreviewProvider`, and 
 - fix #4140
 
 
-### More versions, please check: [Version Update Instructions](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/UPDATE_VERSION.md)
+### More versions, please check: [Version Update Instructions](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/UPDATE_VERSION_EN.md)
 
 ## VI. About Issues
 
@@ -607,31 +626,37 @@ Problem description:
 
 ## VII. Obfuscation
 
-```
--keep class com.shuyu.gsyvideoplayer.video.** { *; }
--dontwarn com.shuyu.gsyvideoplayer.video.**
--keep class com.shuyu.gsyvideoplayer.video.base.** { *; }
--dontwarn com.shuyu.gsyvideoplayer.video.base.**
--keep class com.shuyu.gsyvideoplayer.utils.** { *; }
--dontwarn com.shuyu.gsyvideoplayer.utils.**
--keep class com.shuyu.gsyvideoplayer.player.** {*;}
--dontwarn com.shuyu.gsyvideoplayer.player.**
--keep class tv.danmaku.ijk.** { *; }
--dontwarn tv.danmaku.ijk.**
--keep class androidx.media3.** {*;}
--keep interface androidx.media3.**
+v14.0.0 keeps JNI and reflection entry points rather than entire GSY/Media3 packages. Preserve custom fullscreen/small-window constructors and no-arg player/cache manager constructors. See the [FAQ](doc/QUESTION_EN.md) and [R8 report](doc/R8_ANALYZER_REPORT.md).
 
--keep class com.shuyu.alipay.** {*;}
--keep interface com.shuyu.alipay.**
+```proguard
+# ijk JNI: native side reflects back into Java, keep the whole package
+-keep class tv.danmaku.ijk.media.player.** { *; }
+-dontwarn tv.danmaku.ijk.media.player.**
 
--keep public class * extends android.view.View{
-    *** get*();
-    void set*(***);
+# ---- Three reflection hotspots inside GSYVideoPlayer, MUST keep ----
+
+# 1) Fullscreen / small-window: GSYBaseVideoPlayer re-instantiates itself via
+#    getConstructor(Context[, Boolean]).newInstance()
+-keep class * extends com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer {
     public <init>(android.content.Context);
     public <init>(android.content.Context, java.lang.Boolean);
-    public <init>(android.content.Context, android.util.AttributeSet);
-    public <init>(android.content.Context, android.util.AttributeSet, int);
 }
+
+# 2) PlayerFactory instantiates IPlayerManager implementations via Class.newInstance()
+-keep class * implements com.shuyu.gsyvideoplayer.player.IPlayerManager {
+    public <init>();
+}
+-keep interface com.shuyu.gsyvideoplayer.player.IPlayerManager { *; }
+
+# 3) CacheFactory instantiates ICacheManager implementations via Class.newInstance()
+-keep class * implements com.shuyu.gsyvideoplayer.cache.ICacheManager {
+    public <init>();
+}
+-keep interface com.shuyu.gsyvideoplayer.cache.ICacheManager { *; }
+
+# Media3 aar already ships its own consumer-rules, just silence warnings here
+-dontwarn androidx.media3.**
+-dontwarn com.google.android.exoplayer2.**
 ```
 
 If it is an Alibaba Cloud player, you can refer to its documentation ( https://help.aliyun.com/document_detail/124711.html?spm=a2c4g.124711.0.0.7fa0125dkwUPoU

@@ -27,6 +27,7 @@ import com.example.gsyvideoplayer.effect.GSYVideoGLViewCustomRender2;
 import com.example.gsyvideoplayer.effect.GSYVideoGLViewCustomRender3;
 import com.example.gsyvideoplayer.effect.GSYVideoGLViewCustomRender4;
 import com.example.gsyvideoplayer.effect.PixelationEffect;
+import com.shuyu.gsyvideoplayer.render.glrender.GSYVideoGLViewMultiPassRender;
 import com.example.gsyvideoplayer.utils.CommonUtil;
 import com.example.gsyvideoplayer.utils.DemoVideoUrls;
 import com.shuyu.gsyvideoplayer.GSYBaseActivityDetail;
@@ -34,21 +35,29 @@ import com.shuyu.gsyvideoplayer.listener.GSYVideoGifSaveListener;
 import com.shuyu.gsyvideoplayer.render.view.GSYVideoGLView;
 import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
 import com.shuyu.gsyvideoplayer.render.effect.AutoFixEffect;
+import com.shuyu.gsyvideoplayer.render.effect.BeautyEffect;
 import com.shuyu.gsyvideoplayer.render.effect.BarrelBlurEffect;
 import com.shuyu.gsyvideoplayer.render.effect.BlackAndWhiteEffect;
 import com.shuyu.gsyvideoplayer.render.effect.BrightnessEffect;
+import com.shuyu.gsyvideoplayer.render.effect.BloomEffect;
 import com.shuyu.gsyvideoplayer.render.effect.ContrastEffect;
+import com.shuyu.gsyvideoplayer.render.effect.CrtEffect;
 import com.shuyu.gsyvideoplayer.render.effect.CrossProcessEffect;
 import com.shuyu.gsyvideoplayer.render.effect.DocumentaryEffect;
 import com.shuyu.gsyvideoplayer.render.effect.DuotoneEffect;
 import com.shuyu.gsyvideoplayer.render.effect.FillLightEffect;
 import com.shuyu.gsyvideoplayer.render.effect.GammaEffect;
 import com.shuyu.gsyvideoplayer.render.effect.GaussianBlurEffect;
+import com.shuyu.gsyvideoplayer.render.effect.GaussianBlurMultiPassEffect;
 import com.shuyu.gsyvideoplayer.render.effect.GrainEffect;
+import com.shuyu.gsyvideoplayer.render.effect.GlitchEffect;
 import com.shuyu.gsyvideoplayer.render.effect.HueEffect;
+import com.shuyu.gsyvideoplayer.render.effect.IterativeBlurPyramidEffect;
 import com.shuyu.gsyvideoplayer.render.effect.InvertColorsEffect;
 import com.shuyu.gsyvideoplayer.render.effect.LamoishEffect;
+import com.shuyu.gsyvideoplayer.render.effect.LookupEffect;
 import com.shuyu.gsyvideoplayer.render.effect.NoEffect;
+import com.shuyu.gsyvideoplayer.render.effect.OldTvSignalEffect;
 import com.shuyu.gsyvideoplayer.render.effect.OverlayEffect;
 import com.shuyu.gsyvideoplayer.render.effect.PosterizeEffect;
 import com.shuyu.gsyvideoplayer.render.effect.SampleBlurEffect;
@@ -98,14 +107,25 @@ public class DetailFilterActivity extends GSYBaseActivityDetail<StandardGSYVideo
     private static final String[] FILTER_EFFECT_NAMES = {
         "自动修正", "像素化", "黑白", "对比度", "冲印", "纪录片", "双色调", "补光", "Gamma",
         "颗粒", "颗粒增强", "色相", "反色", "Lomo", "色阶", "桶形模糊", "饱和度", "棕褐",
-        "锐化", "色温", "染色", "暗角", "无滤镜", "Overlay", "采样模糊", "高斯模糊", "亮度"
+        "锐化", "色温", "染色", "暗角", "无滤镜", "Overlay", "采样模糊", "高斯模糊", "亮度",
+        "美颜自然", "美颜强力", "故障风", "CRT扫描线", "老电视干扰"
     };
 
     private static final String[] RENDER_SCENE_NAMES = {
-        "默认渲染", "水印叠加", "双重播放", "图片穿孔", "模糊背景"
+        "默认渲染", "水印叠加", "双重播放", "图片穿孔", "模糊背景", "多Pass高斯", "金字塔迭代模糊", "Bloom辉光", "LUT电影调色"
+    };
+
+    private static final String[] LUT_NAMES = {
+        "LUT原图", "LUT青橙", "LUT赛博朋克"
+    };
+
+    private static final String[] LUT_ASSETS = {
+        "lut/identity.png", "lut/teal_orange.png", "lut/cyberpunk.png"
     };
 
     private int type = 0;
+
+    private int lutType = 0;
 
     private int backupRendType;
 
@@ -479,6 +499,32 @@ public class DetailFilterActivity extends GSYBaseActivityDetail<StandardGSYVideo
                 binding.detailPlayer.setCustomGLRenderer(new GSYVideoGLViewCustomRender4());
                 binding.detailPlayer.setGLRenderMode(GSYVideoGLView.MODE_RENDER_SIZE);
                 break;
+            case 5: {
+                initialEffectName = "多Pass高斯";
+                GSYVideoGLViewMultiPassRender multiPassRender = new GSYVideoGLViewMultiPassRender();
+                multiPassRender.setMultiPassEffect(new GaussianBlurMultiPassEffect(6.0f));
+                binding.detailPlayer.setCustomGLRenderer(multiPassRender);
+                break;
+            }
+            case 6: {
+                initialEffectName = "金字塔迭代模糊";
+                GSYVideoGLViewMultiPassRender pyramidRender = new GSYVideoGLViewMultiPassRender();
+                pyramidRender.setMultiPassEffect(new IterativeBlurPyramidEffect(3));
+                binding.detailPlayer.setCustomGLRenderer(pyramidRender);
+                break;
+            }
+            case 7: {
+                initialEffectName = "Bloom辉光";
+                GSYVideoGLViewMultiPassRender bloomRender = new GSYVideoGLViewMultiPassRender();
+                bloomRender.setMultiPassEffect(new BloomEffect(3, 0.7f, 0.15f, 1.0f));
+                binding.detailPlayer.setCustomGLRenderer(bloomRender);
+                break;
+            }
+            case 8: {
+                initialEffectFilter = new LookupEffect(LUT_ASSETS[0]);
+                initialEffectName = LUT_NAMES[0];
+                break;
+            }
             default:
                 break;
         }
@@ -491,6 +537,31 @@ public class DetailFilterActivity extends GSYBaseActivityDetail<StandardGSYVideo
         if (renderSceneType == 3) {
             updateEffectInfo("固定遮罩");
             showToast("图片穿孔模式使用固定遮罩效果");
+            return;
+        }
+        if (renderSceneType == 5) {
+            updateEffectInfo("多Pass高斯");
+            showToast("多Pass高斯模式使用独立多 pass 渲染管线");
+            return;
+        }
+        if (renderSceneType == 6) {
+            updateEffectInfo("金字塔迭代模糊");
+            showToast("金字塔迭代模糊模式使用降采样金字塔多 pass 管线");
+            return;
+        }
+        if (renderSceneType == 7) {
+            updateEffectInfo("Bloom辉光");
+            showToast("Bloom辉光模式使用亮部提取 + 金字塔模糊 + 合成管线");
+            return;
+        }
+        if (renderSceneType == 8) {
+            String lutName = LUT_NAMES[lutType];
+            binding.detailPlayer.setEffectFilter(new LookupEffect(LUT_ASSETS[lutType]));
+            updateEffectInfo(lutName);
+            lutType++;
+            if (lutType >= LUT_NAMES.length) {
+                lutType = 0;
+            }
             return;
         }
         GSYVideoGLView.ShaderInterface effect = new NoEffect();
@@ -577,6 +648,21 @@ public class DetailFilterActivity extends GSYBaseActivityDetail<StandardGSYVideo
             case 26:
                 effect = new BrightnessEffect(deep);
                 break;
+            case 27:
+                effect = new BeautyEffect(0.55f, 0.35f);
+                break;
+            case 28:
+                effect = new BeautyEffect(0.85f, 0.6f);
+                break;
+            case 29:
+                effect = new GlitchEffect(0.85f);
+                break;
+            case 30:
+                effect = new CrtEffect(0.85f);
+                break;
+            case 31:
+                effect = new OldTvSignalEffect(0.9f);
+                break;
         }
         binding.detailPlayer.setEffectFilter(effect);
         updateEffectInfo(effectName);
@@ -601,7 +687,8 @@ public class DetailFilterActivity extends GSYBaseActivityDetail<StandardGSYVideo
     }
 
     private void updateFilterButtonState() {
-        boolean enabled = renderSceneType != 3;
+        boolean enabled = renderSceneType != 3 && renderSceneType != 5
+                && renderSceneType != 6 && renderSceneType != 7;
         binding.changeFilter.setEnabled(enabled);
         binding.changeFilter.setAlpha(enabled ? 1f : 0.45f);
     }

@@ -497,6 +497,13 @@ GSYVideoType.setRenderType(GSYVideoType.SUFRACE);
 GSYVideoType.setRenderType(GSYVideoType.GLSURFACE);
 ```
 
+### v14.0.0 integration updates
+
+- The filter demo adds multi-pass Gaussian/pyramid blur, Bloom, LUT, Beauty and Glitch/CRT/analog-TV effects. Multi-pass uses `GSYVideoGLViewMultiPassRender` + `setCustomGLRenderer`; LUT/single-pass uses `setEffectFilter`. [Examples](RECENT_FEATURES_EN.md).
+- Add [XML foldables](../app/src/main/java/com/example/gsyvideoplayer/FoldDetailActivity.java) and [Compose foldables](../app/src/main/java/com/example/gsyvideoplayer/compose/host/FoldComposeActivity.kt) with BOOK/TABLETOP hinge layouts, rotation and fullscreen.
+- Dynamic ratio: on the main thread, call `GSYVideoType.setShowType(...)`, followed by `player.getCurrentPlayer().changeTextureViewShowType()` for Views or `controller.changeTextureViewShowType()` for Compose; see [COMPOSE_USE.md](COMPOSE_USE.md).
+- See [DEPENDENCIES_EN.md](DEPENDENCIES_EN.md), [QUESTION_EN.md](QUESTION_EN.md) and the [v14 changelog](UPDATE_VERSION_EN.md#v1400-2026-10-10) for the default three ABIs, FFmpeg 5 audio/RTSP/TLS behavior and migration.
+
 ### Recent Features
 
 For recently added playback features, see [RECENT_FEATURES_EN.md](RECENT_FEATURES_EN.md). It lists demo entries, main classes, and regression scope.
@@ -530,7 +537,7 @@ DLNA/UPnP cast APIs:
 
 ```java
 // build.gradle: add only when casting is needed; its real minSdk is 26
-// implementation 'io.github.carguo:gsyvideoplayer-cast:13.2.1'
+// implementation 'io.github.carguo:gsyvideoplayer-cast:14.0.0'
 
 // 1. Core exposes only protocol-neutral SPI; the optional cast module supplies DLNA
 CastCapability cast = GSYVideoManager.instance().getCastCapability();
@@ -577,7 +584,7 @@ cast.disconnect();
 cast.stopDiscovery();
 ```
 
-Reference the demo in [SampleCastControlVideo](../app/src/main/java/com/example/gsyvideoplayer/video/SampleCastControlVideo.java) and [CastDemoActivity](../app/src/main/java/com/example/gsyvideoplayer/CastDemoActivity.java). Protocol details and the overall architecture live in [CAST_FEATURE_PLAN.md](CAST_FEATURE_PLAN.md) and [CAST_ARCHITECTURE.md](CAST_ARCHITECTURE.md).
+Reference the demo in [SampleCastControlVideo](../app/src/main/java/com/example/gsyvideoplayer/video/SampleCastControlVideo.java) and [CastDemoActivity](../app/src/main/java/com/example/gsyvideoplayer/CastDemoActivity.java). Protocol details and the overall architecture live in [CAST_FEATURE_PLAN.md](CAST_FEATURE_PLAN.md) and [CAST_RECEIVER_DESIGN.md](CAST_RECEIVER_DESIGN.md).
 
 ### Advanced Customization
 
